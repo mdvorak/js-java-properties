@@ -1,0 +1,32 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  eslint:
+    name: ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Fix until https://github.com/reviewdog/action-eslint/issues/152 is resolved
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.13
+
+      # Lint
+      - uses: reviewdog/action-eslint@v1
+        with:
+          fail_on_error: true
+          reporter: ${{ github.event_name == 'pull_request' && 'github-pr-review' || 'github-check' }}

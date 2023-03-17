@@ -1,0 +1,44 @@
+{
+  "name": "js-java-properties",
+  "version": "1.0.0",
+  "description": "Java properties file parser and formatter for Javascript.",
+  "scripts": {
+    "lint": "eslint 'src/**/*.ts'",
+    "fix": "npm run lint -- --fix",
+    "prebuild": "rimraf lib",
+    "build": "tsc --project tsconfig.build.json",
+    "test": "jest --config jest.config.ts --coverage",
+    "test:ci": "npm run lint && npm run test -- --no-cache",
+    "prepack": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mdvorak/js-java-properties.git"
+  },
+  "keywords": [
+    "java",
+    "properties",
+    "parser",
+    "formatter"
+  ],
+  "author": "Michal Dvorak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mdvorak/js-java-properties/issues"
+  },
+  "homepage": "https://github.com/mdvorak/js-java-properties#readme",
+  "engines": {
+    "node": ">= 14"
+  },
+  "devDependencies": {
+    "@jest/types": "^29.5.0",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "eslint": "^8.36.0",
+    "jest": "^29.5.0",
+    "rimraf": "^4.4.0",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.2"
+  }
+}
