@@ -24,9 +24,7 @@ describe('stringify', () => {
 
     // Test
     const result = properties.stringify(config)
-    expect(result).toEqual(
-      'registry=https://abcd\n#foo bar\n@scope:test=avx\n'
-    )
+    expect(result).toEqual('registry=https://abcd\n#foo bar\n@scope:test=avx\n')
   })
 
   it('should remove leading newlines', () => {
@@ -243,13 +241,7 @@ describe('data access', () => {
 
   it('should return last value of duplicate key', () => {
     const config: properties.Properties = {
-      lines: [
-        'foo=bar1',
-        'a=b',
-        'foo=bar2',
-        'foo=bar3',
-        'c=d'
-      ]
+      lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d']
     }
 
     const result = properties.toMap(config)

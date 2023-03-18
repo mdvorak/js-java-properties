@@ -8,11 +8,7 @@
     "strict": true,
     "sourceMap": true,
     "declaration": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "outDir": "lib",
-    "esModuleInterop": true,
+    "outDir": "lib"
   },
   "include": [
     "src"

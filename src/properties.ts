@@ -156,7 +156,7 @@ export const remove = (config: Properties, key: string): void =>
 const findValue = (
   lines: string[],
   key: string
-): { start: number; len: number; sep: string; rawValue?: string } => {
+): {start: number; len: number; sep: string; rawValue?: string} => {
   let sep = '='
   for (const entry of listPairs(lines)) {
     // Remember separator
@@ -230,7 +230,7 @@ const countEndChars = (str: string, c: string): number => {
 
 const parseLine = (
   line: string
-): { key: string; valueLine: string; sep: string } => {
+): {key: string; valueLine: string; sep: string} => {
   let i = -1
 
   // Skip start spaces
