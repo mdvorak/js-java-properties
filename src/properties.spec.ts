@@ -227,29 +227,53 @@ describe('data access', () => {
     expect(config.lines).toEqual([])
   })
 
-  it('should list all key-value pairs', () => {
-    const result = [...properties.list(sample)]
-    const resultAsArrays = result.map(({key, value}) => [key, value])
+  describe('list', () => {
+    it('should list all key-value pairs', () => {
+      const result = [...properties.list(sample)]
+      const resultAsArrays = result.map(({key, value}) => [key, value])
 
-    expect(resultAsArrays).toEqual(samplePairs)
+      expect(resultAsArrays).toEqual(samplePairs)
+    })
   })
 
-  it('should return all keys toMap', () => {
-    const result = properties.toMap(sample)
-    expect([...result.entries()]).toEqual(samplePairs)
+  describe('toObject', () => {
+    it('should return all pairs', () => {
+      const result = properties.toObject(sample)
+      expect(Object.entries(result)).toEqual(samplePairs)
+    })
+
+    it('should return last value of duplicate key', () => {
+      const config: properties.Properties = {
+        lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d']
+      }
+
+      const result = properties.toObject(config)
+      expect(Object.entries(result)).toEqual([
+        ['foo', 'bar3'],
+        ['a', 'b'],
+        ['c', 'd']
+      ])
+    })
   })
 
-  it('should return last value of duplicate key', () => {
-    const config: properties.Properties = {
-      lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d']
-    }
+  describe('toMap', () => {
+    it('should return all pairs', () => {
+      const result = properties.toMap(sample)
+      expect([...result.entries()]).toEqual(samplePairs)
+    })
 
-    const result = properties.toMap(config)
-    expect([...result.entries()]).toEqual([
-      ['foo', 'bar3'],
-      ['a', 'b'],
-      ['c', 'd']
-    ])
+    it('should return last value of duplicate key', () => {
+      const config: properties.Properties = {
+        lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d']
+      }
+
+      const result = properties.toMap(config)
+      expect([...result.entries()]).toEqual([
+        ['foo', 'bar3'],
+        ['a', 'b'],
+        ['c', 'd']
+      ])
+    })
   })
 })
 
@@ -270,7 +294,7 @@ describe('The property key escaping', () => {
     ['\\foo12\\', '\\\\foo12\\\\'],
     ['\0\u0001', '\\u0000\\u0001'],
     ['\u3053\u3093\u306B\u3061\u306F', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
-    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
+    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f']
   ])('should escape key "%s" as "%s"', (key: string, expected: string) => {
     const result = properties.escapeKey(key)
     expect(result).toEqual(expected)
@@ -293,7 +317,7 @@ describe('The property value escaping', () => {
     ['\\foo12\\', '\\\\foo12\\\\'],
     ['\0\u0001', '\\u0000\\u0001'],
     ['\u3053\u3093\u306B\u3061\u306F', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
-    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
+    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f']
   ])('should escape value "%s" as "%s"', (key: string, expected: string) => {
     const result = properties.escapeValue(key)
     expect(result).toEqual(expected)

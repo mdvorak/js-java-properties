@@ -95,6 +95,23 @@ export const get = (config: Properties, key: string): string | undefined => {
 }
 
 /**
+ * Loads all defined keys in the Object.
+ *
+ * If duplicate keys are found, last one is used.
+ *
+ * @param config Java properties set.
+ */
+export const toObject = (config: Properties): Record<string, string> => {
+  const result: Record<string, string> = {}
+
+  for (const {key, rawValue} of listPairs(config.lines)) {
+    result[key] = unescape(rawValue)
+  }
+
+  return result
+}
+
+/**
  * Loads all defined keys in the Map.
  *
  * If duplicate keys are found, last one is used.
