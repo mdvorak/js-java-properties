@@ -50,6 +50,7 @@ describe('data access', () => {
       ' foo4   bar4 ',
       'foo5 = bar5',
       '# foo6 = bar6',
+      'invalid_line',
       '  ! foo7 = bar7',
       'foo8\\::bar8',
       'foo9\\==bar9',
@@ -68,7 +69,9 @@ describe('data access', () => {
       'foo20 = ',
       'foo21 =\\',
       '   ',
-      'foo22 =\\\\'
+      'foo22 =\\\\',
+      'foo\\',
+      '23 bar23'
     ]
   })
 
@@ -92,7 +95,8 @@ describe('data access', () => {
     ['foo19\n', 'bar\t\f\r19\n'],
     ['foo20', ''],
     ['foo21', ''],
-    ['foo22', '\\']
+    ['foo22', '\\'],
+    ['foo23', 'bar23']
   ]
 
   it.each([
@@ -117,7 +121,8 @@ describe('data access', () => {
     ['foo19\n', 'bar\t\f\r19\n'],
     ['foo20', ''],
     ['foo21', ''],
-    ['foo22', '\\']
+    ['foo22', '\\'],
+    ['foo23', 'bar23']
   ])('should get property "%s"', (key, expected) => {
     const result = properties.get(sample, key)
     expect(result).toBe(expected)
@@ -180,7 +185,8 @@ describe('data access', () => {
       'foo19\n',
       'foo20',
       'foo21',
-      'foo22'
+      'foo22',
+      'foo23'
     ]
     keys.forEach(key => properties.set(sample, key, 'x'))
 
@@ -207,7 +213,8 @@ describe('data access', () => {
       'foo20 = x',
       'foo21 =x',
       'foo22 =x',
-      'foo6 =x'
+      'foo23 x',
+      'foo6 x'
     ])
   })
 
@@ -289,8 +296,20 @@ describe('data access', () => {
   })
 })
 
+describe('unescape', () => {
+  it.each([
+    ['foo', 'foo'],
+    ['\\:\\#\\!\\ ', ':#! '],
+    ['a\\r\\f\\n\\t\\\\\\  ', 'a\r\f\n\t\\  '],
+    ['\\u0000\\u0001', '\0\u0001'],
+    ['\\u3053\\u3093\\u306b\\u3061\\u306f', 'こんにちは']
+  ])('should unescape string "%s" to "%s"', (str: string, expected: string) => {
+    const result = properties.unescape(str)
+    expect(result).toEqual(expected)
+  })
+})
 
-describe('The property key escaping', () => {
+describe('escapeKey', () => {
   it.each([
     ['foo1', 'foo1'],
     ['foo2:', 'foo2\\:'],
@@ -313,7 +332,7 @@ describe('The property key escaping', () => {
   })
 })
 
-describe('The property value escaping', () => {
+describe('escapeValue', () => {
   it.each([
     ['foo1', 'foo1'],
     ['foo2:', 'foo2\\:'],
