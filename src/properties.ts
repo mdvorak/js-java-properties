@@ -316,24 +316,39 @@ const escapeValue = (str: string, escapeChars = ''): string => {
   const result: string[] = []
   let escapeNext = str.startsWith(' ') // always escape space at beginning
 
-  for (const char of str) {
+  for (let index = 0; index < str.length; index++) {
+    const char = str[index]
     switch (char) {
-      case '\\':
+      case '\\': {
         result.push('\\\\')
         break
-      case '\r':
-        result.push('\\r')
-        break
-      case '\t':
-        result.push('\\t')
-        break
-      case '\n':
-        result.push('\\n')
-        break
-      case '\f':
+      }
+      case '\f': {
+        // Formfeed/
         result.push('\\f')
         break
-      default:
+      }
+      case '\n': {
+        // Newline.
+        result.push('\\n')
+        break
+      }
+      case '\r': {
+        // Carriage return.
+        result.push('\\r')
+        break
+      }
+      case '\t': {
+        // Tab.
+        result.push('\\t')
+        break
+      }
+      default: {
+        // Escape trailing space
+        if (index === str.length - 1 && char === ' ') {
+          escapeNext = true
+        }
+        // Escape if required
         if (escapeNext || escapeChars.includes(char)) {
           result.push('\\')
           escapeNext = false
@@ -341,8 +356,10 @@ const escapeValue = (str: string, escapeChars = ''): string => {
 
         result.push(char)
         break
+      }
     }
   }
+
   return result.join('')
 }
 

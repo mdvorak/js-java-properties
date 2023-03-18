@@ -129,7 +129,7 @@ describe('data access', () => {
     ['foo9=', 'bar9', 'foo9\\==bar9'],
     ['foo10=', 'bar10', 'foo10\\==bar10'],
     ['foo11 ', 'bar11', 'foo11\\ =bar11'],
-    [' foo12', 'bar12', '\\ foo12=bar12'],
+    [' foo12', 'bar12 ', '\\ foo12=bar12\\ '],
     ['#foo13', 'bar13', '\\#foo13=bar13'],
     ['!foo14#', 'bar14', '\\!foo14\\#=bar14'],
     ['foo15', '#bar15', 'foo15=#bar15'],
