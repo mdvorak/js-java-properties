@@ -234,6 +234,18 @@ describe('data access', () => {
 
       expect(resultAsArrays).toEqual(samplePairs)
     })
+
+    it('should list duplicate pairs', () => {
+      const config: properties.Properties = {
+        lines: ['foo=bar1', 'foo=bar2']
+      }
+
+      const result = [...properties.list(config)]
+      expect(result).toEqual([
+        {key: 'foo', value: 'bar1'},
+        {key: 'foo', value: 'bar2'}
+      ])
+    })
   })
 
   describe('toObject', () => {
