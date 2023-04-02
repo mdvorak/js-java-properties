@@ -1,16 +1,18 @@
+import * as fs from 'node:fs/promises'
 import properties from '.'
 
 describe('parse', () => {
   it('should parse all lines', () => {
     // Data
-    const sample = 'registry=https://abcd\n#foo bar\n@scope:test=avx\n'
+    const sample = 'registry=https://abcd\n#foo bar\r\n@scope:test=avx\rextra\r\n'
 
     // Test
     const result = properties.parse(sample)
     expect(result.lines).toEqual([
       'registry=https://abcd',
       '#foo bar',
-      '@scope:test=avx'
+      '@scope:test=avx',
+      'extra'
     ])
   })
 })
@@ -128,6 +130,19 @@ describe('data access', () => {
     expect(result).toBe(expected)
   })
 
+  it('should return last value of duplicate key', () => {
+    const config: properties.Properties = {
+      lines: [
+        'key1=foo1',
+        'key2=foo2',
+        'key1=foo3'
+      ]
+    }
+
+    const result = properties.get(config, 'key1')
+    expect(result).toBe('foo3')
+  })
+
   it.each([
     ['foo', 'bar', 'foo=bar'],
     ['foo8:', 'bar8', 'foo8\\:=bar8'],
@@ -218,6 +233,22 @@ describe('data access', () => {
     ])
   })
 
+  it('should remove duplicate keys on set', () => {
+    const config: properties.Properties = {
+      lines: [
+        'key1=foo1',
+        'key2=foo2',
+        'key1=foo3'
+      ]
+    }
+
+    properties.set(config, 'key1', 'test')
+    expect(config.lines).toEqual([
+      'key1=test',
+      'key2=foo2'
+    ])
+  })
+
   it('should remove existing key with set undefined', () => {
     const config: properties.Properties = {
       lines: ['foo=bar']
@@ -232,6 +263,19 @@ describe('data access', () => {
     }
     properties.remove(config, 'foo')
     expect(config.lines).toEqual([])
+  })
+
+  it('should remove all duplicate keys with remove', () => {
+    const config: properties.Properties = {
+      lines: [
+        'key1=foo1',
+        'key2=foo2',
+        'key1=foo3'
+      ]
+    }
+
+    properties.remove(config, 'key1')
+    expect(config.lines).toEqual(['key2=foo2'])
   })
 
   describe('list', () => {
@@ -292,6 +336,40 @@ describe('data access', () => {
         ['a', 'b'],
         ['c', 'd']
       ])
+    })
+
+    it('should parse test file', async () => {
+      const contents = await fs.readFile('../fixtures/test-all.properties', 'utf-8')
+
+      // Parse
+      const result = properties.toMap(properties.parse(contents))
+
+      // Verify
+      expect(result).toEqual({
+        '': 'So does this line.',
+        category: 'file format',
+        duplicateKey: 'second',
+        empty: '',
+        encodedHelloInJapanese: 'こんにちは',
+        evenKey: 'This is on one line\\',
+        'evenLikeThis\\': '',
+        hello: 'hello',
+        helloInJapanese: 'こんにちは',
+        keyWithBackslashes: 'This has random backslashes',
+        'keyWithDelimiters:= ': 'This is the value for the key "keyWithDelimiters:= "',
+        'keyWitheven\\': 'this colon is not escaped',
+        language: 'English',
+        multiline: 'This line continues on 3 lines',
+        multilineKey: 'this is a multiline key',
+        noWhiteSpace: 'The key will be "noWhiteSpace" without any whitespace.    ',
+        oddKey: 'This is line one and\\# This is line two',
+        orLikeThis: '',
+        path: 'c:\\wiki\\templates',
+        topic: '.properties file',
+        valueWithEscapes: 'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
+        website: 'https://en.wikipedia.org/',
+        welcome: 'Welcome to Wikipedia!    '
+      })
     })
   })
 })
