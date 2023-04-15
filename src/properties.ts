@@ -138,11 +138,13 @@ export const toMap = (config: Properties): Map<string, string> => {
  * @param config Java properties set.
  * @param key Key name.
  * @param value New value. If undefined or null, key will be removed.
+ * @param options Optionally override set behavior.
  */
 export const set = (
   config: Properties,
   key: string,
-  value: string | undefined | null
+  value: string | undefined | null,
+  options?: {separator?: string}
 ): void => {
   // Find existing
   const {start, len, sep} = findValue(config.lines, key)
@@ -150,7 +152,7 @@ export const set = (
   // Prepare value
   const items =
     typeof value === 'string'
-      ? [`${escapeKey(key)}${sep || '='}${escapeValue(value)}`]
+      ? [`${escapeKey(key)}${options?.separator || sep || '='}${escapeValue(value)}`]
       : []
 
   // If found

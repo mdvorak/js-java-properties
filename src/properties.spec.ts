@@ -102,168 +102,189 @@ describe('data access', () => {
     ['foo23', 'bar23']
   ]
 
-  it.each(samplePairs)('should get property "%s"', (key, expected) => {
-    const result = properties.get(sample, key)
-    expect(result).toBe(expected)
+  describe('get value', () => {
+    it.each(samplePairs)('should get property "%s"', (key, expected) => {
+      const result = properties.get(sample, key)
+      expect(result).toBe(expected)
+    })
+
+    it.each([
+      ['foo6'],
+      ['foo7']
+    ])('should not get commented property "%s"', (key) => {
+      const result = properties.get(sample, key)
+      expect(result).toBeUndefined()
+    })
+
+
+    it('should return last value of duplicate key', () => {
+      const config: properties.Properties = {
+        lines: [
+          'key1=foo1',
+          'key2=foo2',
+          'key1=foo3'
+        ]
+      }
+
+      const result = properties.get(config, 'key1')
+      expect(result).toBe('foo3')
+    })
   })
 
-  it.each([
-    ['foo6'],
-    ['foo7']
-  ])('should not get commented property "%s"', (key) => {
-    const result = properties.get(sample, key)
-    expect(result).toBeUndefined()
-  })
+  describe('set value', () => {
+    it.each([
+      ['foo1', 'bar', 'foo1=bar'],
+      ['foo8:', 'bar8', 'foo8\\:=bar8'],
+      ['foo9=', 'bar9', 'foo9\\==bar9'],
+      ['foo10=', 'bar10', 'foo10\\==bar10'],
+      ['foo11 ', 'bar11', 'foo11\\ =bar11'],
+      [' foo12', 'bar12 ', '\\ foo12=bar12 '],
+      ['#foo13', 'bar13', '\\#foo13=bar13'],
+      ['!foo14#', 'bar14', '\\!foo14\\#=bar14'],
+      ['foo15', '#bar15', 'foo15=\\#bar15'],
+      ['f o  o18', ' bar18', 'f\\ o\\ \\ o18=\\ bar18'],
+      ['foo19\n', 'bar\t\f\r19\n', 'foo19\\n=bar\\t\\f\\r19\\n'],
+      ['foo20', '', 'foo20='],
+      ['foo22', '\\', 'foo22=\\\\']
+    ])('should format key pair for "%s"', (key, value, expected) => {
+      const config = properties.empty()
+      properties.set(config, key, value)
+      expect(config.lines).toEqual([expected])
+    })
 
+    it.each([
+      ['foo=bar', 'a=b'],
+      ['foo = bar', 'a = b'],
+      ['foo:bar', 'a:b'],
+      ['foo: bar', 'a: b'],
+      ['foo  bar', 'a  b'],
+      ['# comment', 'a=b']
+    ])('should reuse last separator from "%s"', (line, expected) => {
+      const config: properties.Properties = {
+        lines: [line]
+      }
+      properties.set(config, 'a', 'b')
+      expect(config.lines).toEqual([line, expected])
+    })
 
-  it('should return last value of duplicate key', () => {
-    const config: properties.Properties = {
-      lines: [
-        'key1=foo1',
-        'key2=foo2',
-        'key1=foo3'
+    it('should replace key pairs', () => {
+      const keys = [
+        'foo0',
+        'foo1',
+        'foo2',
+        'foo3',
+        'foo4',
+        'foo5',
+        'foo6',
+        'foo8:',
+        'foo9=',
+        'foo10=',
+        'foo11 ',
+        ' foo12',
+        '#foo13',
+        '!foo14#',
+        'foo15',
+        'foo16',
+        'foo17',
+        'f o  o18',
+        'foo19\n',
+        'foo20',
+        'foo21',
+        'foo22',
+        'foo23'
       ]
-    }
+      keys.forEach(key => properties.set(sample, key, 'x'))
 
-    const result = properties.get(config, 'key1')
-    expect(result).toBe('foo3')
+      expect(sample.lines).toEqual([
+        'foo0=x',
+        'foo1=x',
+        'foo2:x',
+        'foo3 x',
+        'foo4   x',
+        'foo5 = x',
+        '# foo6 = bar6',
+        '  ! foo7 = bar7',
+        'foo8\\::x',
+        'foo9\\==x',
+        'foo10\\=:x',
+        'foo11\\  x',
+        '\\ foo12 = x',
+        '\\#foo13 = x',
+        '\\!foo14\\# = x',
+        'foo15 = x',
+        'foo16 = x',
+        'foo17 = x',
+        'f\\ o\\ \\ o18 =x',
+        'foo19\\n= x',
+        'foo20 = x',
+        'foo21 =x',
+        'foo22 =x',
+        'foo23 x',
+        'foo6 x'
+      ])
+    })
+
+    it('should use custom separator', () => {
+      const config: properties.Properties = {
+        lines: [
+          'key1=foo1',
+          'key2=foo2'
+        ]
+      }
+
+      properties.set(config, 'key1', 'test', {separator: ': '})
+      expect(config.lines).toEqual([
+        'key1: test',
+        'key2=foo2'
+      ])
+    })
+
+    it('should remove duplicate keys on set', () => {
+      const config: properties.Properties = {
+        lines: [
+          'key1=foo1',
+          'key2=foo2',
+          'key1=foo3'
+        ]
+      }
+
+      properties.set(config, 'key1', 'test')
+      expect(config.lines).toEqual([
+        'key1=test',
+        'key2=foo2'
+      ])
+    })
   })
 
-  it.each([
-    ['foo1', 'bar', 'foo1=bar'],
-    ['foo8:', 'bar8', 'foo8\\:=bar8'],
-    ['foo9=', 'bar9', 'foo9\\==bar9'],
-    ['foo10=', 'bar10', 'foo10\\==bar10'],
-    ['foo11 ', 'bar11', 'foo11\\ =bar11'],
-    [' foo12', 'bar12 ', '\\ foo12=bar12 '],
-    ['#foo13', 'bar13', '\\#foo13=bar13'],
-    ['!foo14#', 'bar14', '\\!foo14\\#=bar14'],
-    ['foo15', '#bar15', 'foo15=\\#bar15'],
-    ['f o  o18', ' bar18', 'f\\ o\\ \\ o18=\\ bar18'],
-    ['foo19\n', 'bar\t\f\r19\n', 'foo19\\n=bar\\t\\f\\r19\\n'],
-    ['foo20', '', 'foo20='],
-    ['foo22', '\\', 'foo22=\\\\']
-  ])('should format key pair for "%s"', (key, value, expected) => {
-    const config = properties.empty()
-    properties.set(config, key, value)
-    expect(config.lines).toEqual([expected])
-  })
+  describe('remove value', () => {
+    it('should remove existing key with set undefined', () => {
+      const config: properties.Properties = {
+        lines: ['foo=bar']
+      }
+      properties.set(config, 'foo', undefined)
+      expect(config.lines).toEqual([])
+    })
 
-  it.each([
-    ['foo=bar', 'a=b'],
-    ['foo = bar', 'a = b'],
-    ['foo:bar', 'a:b'],
-    ['foo: bar', 'a: b'],
-    ['foo  bar', 'a  b'],
-    ['# comment', 'a=b']
-  ])('should reuse last separator from "%s"', (line, expected) => {
-    const config: properties.Properties = {
-      lines: [line]
-    }
-    properties.set(config, 'a', 'b')
-    expect(config.lines).toEqual([line, expected])
-  })
+    it('should remove existing key with remove', () => {
+      const config: properties.Properties = {
+        lines: ['foo=bar']
+      }
+      properties.remove(config, 'foo')
+      expect(config.lines).toEqual([])
+    })
 
-  it('should replace key pairs', () => {
-    const keys = [
-      'foo0',
-      'foo1',
-      'foo2',
-      'foo3',
-      'foo4',
-      'foo5',
-      'foo6',
-      'foo8:',
-      'foo9=',
-      'foo10=',
-      'foo11 ',
-      ' foo12',
-      '#foo13',
-      '!foo14#',
-      'foo15',
-      'foo16',
-      'foo17',
-      'f o  o18',
-      'foo19\n',
-      'foo20',
-      'foo21',
-      'foo22',
-      'foo23'
-    ]
-    keys.forEach(key => properties.set(sample, key, 'x'))
+    it('should remove all duplicate keys with remove', () => {
+      const config: properties.Properties = {
+        lines: [
+          'key1=foo1',
+          'key2=foo2',
+          'key1=foo3'
+        ]
+      }
 
-    expect(sample.lines).toEqual([
-      'foo0=x',
-      'foo1=x',
-      'foo2:x',
-      'foo3 x',
-      'foo4   x',
-      'foo5 = x',
-      '# foo6 = bar6',
-      '  ! foo7 = bar7',
-      'foo8\\::x',
-      'foo9\\==x',
-      'foo10\\=:x',
-      'foo11\\  x',
-      '\\ foo12 = x',
-      '\\#foo13 = x',
-      '\\!foo14\\# = x',
-      'foo15 = x',
-      'foo16 = x',
-      'foo17 = x',
-      'f\\ o\\ \\ o18 =x',
-      'foo19\\n= x',
-      'foo20 = x',
-      'foo21 =x',
-      'foo22 =x',
-      'foo23 x',
-      'foo6 x'
-    ])
-  })
-
-  it('should remove duplicate keys on set', () => {
-    const config: properties.Properties = {
-      lines: [
-        'key1=foo1',
-        'key2=foo2',
-        'key1=foo3'
-      ]
-    }
-
-    properties.set(config, 'key1', 'test')
-    expect(config.lines).toEqual([
-      'key1=test',
-      'key2=foo2'
-    ])
-  })
-
-  it('should remove existing key with set undefined', () => {
-    const config: properties.Properties = {
-      lines: ['foo=bar']
-    }
-    properties.set(config, 'foo', undefined)
-    expect(config.lines).toEqual([])
-  })
-
-  it('should remove existing key with remove', () => {
-    const config: properties.Properties = {
-      lines: ['foo=bar']
-    }
-    properties.remove(config, 'foo')
-    expect(config.lines).toEqual([])
-  })
-
-  it('should remove all duplicate keys with remove', () => {
-    const config: properties.Properties = {
-      lines: [
-        'key1=foo1',
-        'key2=foo2',
-        'key1=foo3'
-      ]
-    }
-
-    properties.remove(config, 'key1')
-    expect(config.lines).toEqual(['key2=foo2'])
+      properties.remove(config, 'key1')
+      expect(config.lines).toEqual(['key2=foo2'])
+    })
   })
 
   describe('list', () => {
