@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/mdvorak/js-java-properties/compare/v1.0.0...v1.0.1) (2023-04-15)
+
+
+### Bug Fixes
+
+* fix main entrypoint in package.json ([f3e9487](https://github.com/mdvorak/js-java-properties/commit/f3e94879cb97769cca57e73107a781f3b5855a17))
+
 ## 1.0.0 (2023-04-15)
 
 

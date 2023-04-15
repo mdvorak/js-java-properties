@@ -1,6 +1,6 @@
 {
   "name": "js-java-properties",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Java properties file parser and formatter for Javascript.",
   "scripts": {
     "lint": "eslint .",
