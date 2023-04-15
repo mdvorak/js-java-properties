@@ -140,6 +140,13 @@ export const toMap = (config: Properties): Map<string, string> => {
   return result
 }
 
+/**
+ * Format key-value pair as a single line.
+ *
+ * @param key Key, can be empty string.
+ * @param value Value, can be empty string.
+ * @param sep Separator, cannot be empty. Valid chars are ` :=`.
+ */
 const formatLine = (key: string, value: string, sep: string) =>
   `${escapeKey(key)}${sep}${escapeValue(value)}`
 
@@ -199,16 +206,21 @@ export const remove = (config: Properties, key: string): void =>
  *
  * @param lines Lines to iterate over.
  */
-function* chars(lines: string[]): Generator<{char: string; line: number}> {
+function* chars(
+  lines: string[]
+): Generator<{char: string; lineNumber: number}> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     for (const char of line) {
-      yield {char, line: i}
+      yield {char, lineNumber: i}
     }
-    yield {char: 'EOL', line: i}
+    yield {char: 'EOL', lineNumber: i}
   }
 }
 
+/**
+ * State for a simple state-machine inside listPairs.
+ */
 enum State {
   START,
   COMMENT,
@@ -217,6 +229,34 @@ enum State {
   VALUE
 }
 
+/**
+ * Create empty START state.
+ */
+const newState = (): {
+  state: State
+  start: number
+  key: string
+  sep: string
+  value: string
+  skipSpace: boolean
+  escapedNext: boolean
+  unicode?: string
+} => ({
+  state: State.START,
+  start: -1,
+  key: '',
+  sep: '',
+  value: '',
+  skipSpace: true,
+  escapedNext: false
+})
+
+/**
+ * Parse and iterate over key-pairs.
+ *
+ * @param lines Lines to parse.
+ * @return Parsed and unescaped key-value pairs.
+ */
 function* listPairs(lines: string[]): Generator<{
   start: number
   len: number
@@ -224,28 +264,9 @@ function* listPairs(lines: string[]): Generator<{
   key: string
   value: string
 }> {
-  const newState = (): {
-    state: State
-    start: number
-    key: string
-    sep: string
-    value: string
-    skipSpace: boolean
-    escapedNext: boolean
-    unicode?: string
-  } => ({
-    state: State.START,
-    start: -1,
-    key: '',
-    sep: '',
-    value: '',
-    skipSpace: true,
-    escapedNext: false
-  })
-
   let state = newState()
 
-  for (const {char, line} of chars(lines)) {
+  for (const {char, lineNumber} of chars(lines)) {
     // Simply ignore spaces
     if (state.skipSpace && char === ' ') {
       continue
@@ -256,7 +277,7 @@ function* listPairs(lines: string[]): Generator<{
     if (state.unicode) {
       // Handle incomplete sequence
       if (char === 'EOL') {
-        throw new Error(`Invalid unicode sequence at line ${line}`)
+        throw new Error(`Invalid unicode sequence at line ${lineNumber}`)
       }
 
       // Append and consume until it has correct length
@@ -274,11 +295,11 @@ function* listPairs(lines: string[]): Generator<{
         case '#':
         case '!':
           state.state = State.COMMENT
-          state.start = line
+          state.start = lineNumber
           break
         default:
           state.state = State.KEY
-          state.start = line
+          state.start = lineNumber
           break
       }
     }
@@ -295,7 +316,7 @@ function* listPairs(lines: string[]): Generator<{
     if (state.state === State.KEY) {
       // Special unicode handling
       if (state.unicode) {
-        state.key += parseUnicode(state.unicode, line)
+        state.key += parseUnicode(state.unicode, lineNumber)
         state.unicode = undefined
         continue
       }
@@ -308,7 +329,7 @@ function* listPairs(lines: string[]): Generator<{
             state.skipSpace = true
           } else {
             // Value-less key
-            yield {...state, len: line - state.start + 1}
+            yield {...state, len: lineNumber - state.start + 1}
             state = newState()
           }
           break
@@ -358,7 +379,7 @@ function* listPairs(lines: string[]): Generator<{
       switch (char) {
         case 'EOL':
           // Value-less key
-          yield {...state, len: line - state.start + 1}
+          yield {...state, len: lineNumber - state.start + 1}
           state = newState()
           break
         case ' ':
@@ -386,7 +407,7 @@ function* listPairs(lines: string[]): Generator<{
     if (state.state === State.VALUE) {
       // Special unicode handling
       if (state.unicode) {
-        state.value += parseUnicode(state.unicode, line)
+        state.value += parseUnicode(state.unicode, lineNumber)
         state.unicode = undefined
         continue
       }
@@ -399,7 +420,7 @@ function* listPairs(lines: string[]): Generator<{
             state.skipSpace = true
           } else {
             // Value end
-            yield {...state, len: line - state.start + 1}
+            yield {...state, len: lineNumber - state.start + 1}
             state = newState()
           }
           break
