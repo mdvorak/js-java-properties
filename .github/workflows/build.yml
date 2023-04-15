@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ latest, 14, 16, 18 ]
+        node-version: [ latest, 14, 16, 18, "lts/*" ]
     steps:
       # Checkout
       - name: Checkout
@@ -40,11 +40,6 @@ jobs:
           npm run build
           npm run test:ci
 
-      # Publish
-      - name: Publish
-        if: ${{ github.ref_type == 'tag' }}
-        run: npm publish
-
   build-all:
     name: Build
     runs-on: ubuntu-latest
@@ -53,3 +48,33 @@ jobs:
     needs: [ build ]
     steps:
       - run: echo OK
+
+  publish:
+    name: Publish
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: [ build-all ]
+    steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      # Setup
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+      
+      # Dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Publish
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
