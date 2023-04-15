@@ -20,10 +20,10 @@ npm install js-java-properties
 Parses correctly file contents as a string into lines.
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
-const props = properties.parse('key1=value1\nkey2 = value2\nkey3: value3');
-console.log(props);
+const props = properties.parse('key1=value1\nkey2 = value2\nkey3: value3')
+console.log(props)
 // { lines: [ 'key1=value1', 'key2 = value2', 'key3: value3' ] }
 ```
 
@@ -32,13 +32,13 @@ console.log(props);
 Formats property lines into string.
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
-const props = properties.empty();
-props.lines.push('key1=value1', 'key2 = value2', 'key3: value3');
+const props = properties.empty()
+props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-const output = properties.stringify(props);
-console.log(output);
+const output = properties.stringify(props)
+console.log(output)
 // 'key1=value1\nkey2 = value2\nkey3: value3\n'
 ```
 
@@ -48,7 +48,7 @@ Iterate over every key-value pair. Note that if file contains duplicate keys,
 they are returned here as well.
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
 const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
@@ -69,27 +69,27 @@ Use `toObject` or `toMap` methods to convert it into readable object.
 In case there are duplicate keys, last one is returned.
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
-const props = properties.empty();
-props.lines.push('key1=value1', 'key2 = value2', 'key3: value3');
+const props = properties.empty()
+props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-console.log(properties.get(props, 'key2'));
+console.log(properties.get(props, 'key2'))
 // 'value2'
 ```
 
 ### Converting to object or map
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
-const props = properties.empty();
-props.lines.push('key1=value1', 'key2 = value2', 'key3: value3');
+const props = properties.empty()
+props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-console.log(properties.toObject(props));
+console.log(properties.toObject(props))
 // { key1: 'value1', key2: 'value2', key3: 'value3' }
 
-console.log(properties.toMap(props));
+console.log(properties.toMap(props))
 // Map(3) { 'key1' => 'value1', 'key2' => 'value2', 'key3' => 'value3' }
 ```
 
@@ -101,25 +101,25 @@ Empty string still counts as a value.
 If there are duplicate keys in the list, all but first one are removed.
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
-const props = properties.empty();
-props.lines.push('key1=value1', 'key2 = value2', 'key3: value3');
+const props = properties.empty()
+props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-properties.set(props, 'key2', 'new-value');
-console.log(properties.stringify(props));
+properties.set(props, 'key2', 'new-value')
+console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\nkey3: value3\n'
 
-properties.set(props, 'new-key', 'new-value');
-console.log(properties.stringify(props));
+properties.set(props, 'new-key', 'new-value')
+console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\nkey3: value3\nnew-key=new-value\n'
 
-properties.set(props, 'new-key', 'new-value', {separator: ':'});
-console.log(properties.stringify(props));
+properties.set(props, 'new-key', 'new-value', {separator: ':'})
+console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\nkey3: value3\nnew-key:new-value\n'
 
-properties.set(props, 'key3', undefined);
-console.log(properties.stringify(props));
+properties.set(props, 'key3', undefined)
+console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\n'
 ```
 
@@ -128,13 +128,13 @@ console.log(properties.stringify(props));
 Removes given key and value. If there are duplicate keys in the list, all are removed.
 
 ```ts
-import properties from 'js-java-properties';
+import * as properties from 'js-java-properties'
 
-const props = properties.empty();
-props.lines.push('key1=value1', 'key2 = value2', 'key3: value3');
+const props = properties.empty()
+props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-properties.remove(props, 'key2');
-console.log(properties.stringify(props));
+properties.remove(props, 'key2')
+console.log(properties.stringify(props))
 // 'key1=value1\nkey3: value3\n'
 ```
 
