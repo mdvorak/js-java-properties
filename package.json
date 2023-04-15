@@ -31,7 +31,8 @@
   "engines": {
     "node": ">= 14"
   },
-  "main": "lib/properties.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
     "lib",
     "src"
