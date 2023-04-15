@@ -42,6 +42,11 @@ export const parse = (contents: string): Properties => {
     lines.pop()
   }
 
+  // Remove BOM from the first line
+  if (lines.length > 0 && lines[0].codePointAt(0) === 0xfeff) {
+    lines[0] = lines[0].slice(1)
+  }
+
   return {lines}
 }
 
@@ -473,7 +478,7 @@ const parseUnicode = (sequence: string, line: number): string => {
   if (!sequence.match(/^0x[\da-fA-F]{4}$/)) {
     throw new Error(`Invalid unicode sequence at line ${line}`)
   }
-  return String.fromCharCode(parseInt(sequence, 16))
+  return String.fromCodePoint(parseInt(sequence, 16))
 }
 
 /**

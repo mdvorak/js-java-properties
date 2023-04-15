@@ -17,6 +17,14 @@ describe('parse', () => {
       'extra'
     ])
   })
+
+  it('should remove BOM', () => {
+    const sample = '\ufefffoo=bar\n#test'
+
+    // Test
+    const result = properties.parse(sample)
+    expect(result.lines).toEqual(['foo=bar', '#test'])
+  })
 })
 
 describe('stringify', () => {
