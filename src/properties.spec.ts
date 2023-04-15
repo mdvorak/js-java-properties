@@ -116,7 +116,6 @@ describe('data access', () => {
       expect(result).toBeUndefined()
     })
 
-
     it('should return last value of duplicate key', () => {
       const config: properties.Properties = {
         lines: [
@@ -128,6 +127,25 @@ describe('data access', () => {
 
       const result = properties.get(config, 'key1')
       expect(result).toBe('foo3')
+    })
+
+    it('should throw on invalid unicode sequence in key', () => {
+      const config: properties.Properties = {
+        lines: ['foo\\u23a=bar']
+      }
+
+      expect(() => properties.get(config, 'foo')).toThrowError()
+    })
+
+    it.each([
+      ['foo=bar\\u23a'],
+      ['foo=bar\\u23ax5']
+    ])('should throw on invalid unicode sequence in value %s', (line) => {
+      const config: properties.Properties = {
+        lines: [line]
+      }
+
+      expect(() => properties.get(config, 'foo')).toThrowError()
     })
   })
 
@@ -364,6 +382,7 @@ describe('data access', () => {
         'evenLikeThis\\': '',
         hello: 'hello',
         helloInJapanese: 'こんにちは',
+        'こんにちは': 'hello',
         keyWithBackslashes: 'This has random backslashes',
         'keyWithDelimiters:= ': 'This is the value for the key "keyWithDelimiters:= "',
         'keyWitheven\\': 'this colon is not escaped',
@@ -380,19 +399,6 @@ describe('data access', () => {
         welcome: 'Welcome to Wikipedia!    '
       })
     })
-  })
-})
-
-describe('unescape', () => {
-  it.each([
-    ['foo', 'foo'],
-    ['\\:\\#\\!\\ ', ':#! '],
-    ['a\\r\\f\\n\\t\\\\\\  ', 'a\r\f\n\t\\  '],
-    ['\\u0000\\u0001', '\0\u0001'],
-    ['\\u3053\\u3093\\u306b\\u3061\\u306f', 'こんにちは']
-  ])('should unescape string "%s" to "%s"', (str: string, expected: string) => {
-    const result = properties.unescape(str)
-    expect(result).toEqual(expected)
   })
 })
 

@@ -232,7 +232,8 @@ function* listPairs(lines: string[]): Generator<{
     sep: string,
     value: string,
     skipSpace: boolean,
-    escapedNext: boolean
+    escapedNext: boolean,
+    unicode?: string
   } =>
     ({state: State.START, start: -1, key: '', sep: '', value: '', skipSpace: true, escapedNext: false})
 
@@ -244,6 +245,20 @@ function* listPairs(lines: string[]): Generator<{
       continue
     }
     state.skipSpace = false
+
+    // Parse unicode
+    if (state.unicode) {
+      // Handle incomplete sequence
+      if (char === 'EOL') {
+        throw new Error(`Invalid unicode sequence at line ${line}`)
+      }
+
+      // Append and consume until it has correct length
+      state.unicode += char
+      if (state.unicode.length < 6) {
+        continue
+      }
+    }
 
     // First char on the line
     if (state.state === State.START) {
@@ -272,6 +287,13 @@ function* listPairs(lines: string[]): Generator<{
 
     // Key
     if (state.state === State.KEY) {
+      // Special unicode handling
+      if (state.unicode) {
+        state.key += parseUnicode(state.unicode, line)
+        state.unicode = undefined
+        continue
+      }
+
       switch (char) {
         case 'EOL':
           if (state.escapedNext) {
@@ -307,10 +329,20 @@ function* listPairs(lines: string[]): Generator<{
           }
           break
         default:
-          // Normal char
-          // TODO handle unicode
-          state.key += state.escapedNext ? unescapeChar(char) : char
-          state.escapedNext = false
+          // Escape sequence
+          if (state.escapedNext) {
+            state.escapedNext = false
+            if (char === 'u') {
+              // Unicode
+              state.unicode = '0x'
+            } else {
+              // Special char
+              state.key += unescapeChar(char)
+            }
+          } else {
+            // Normal char
+            state.key += char
+          }
           break
       }
     }
@@ -346,6 +378,13 @@ function* listPairs(lines: string[]): Generator<{
 
     // Value
     if (state.state === State.VALUE) {
+      // Special unicode handling
+      if (state.unicode) {
+        state.value += parseUnicode(state.unicode, line)
+        state.unicode = undefined
+        continue
+      }
+
       switch (char) {
         case 'EOL':
           if (state.escapedNext) {
@@ -369,10 +408,19 @@ function* listPairs(lines: string[]): Generator<{
           }
           break
         default:
-          // Normal char
-          // TODO handle unicode
-          state.value += state.escapedNext ? unescapeChar(char) : char
-          state.escapedNext = false
+          if (state.escapedNext) {
+            state.escapedNext = false
+            if (char === 'u') {
+              // Unicode
+              state.unicode = '0x'
+            } else {
+              // Special char
+              state.value += unescapeChar(char)
+            }
+          } else {
+            // Normal char
+            state.value += char
+          }
           break
       }
     }
@@ -395,14 +443,12 @@ const unescapeChar = (c: string): string => {
   }
 }
 
-/**
- * Unescape key or value.
- *
- * @param str Escaped string.
- * @return Actual string.
- */
-export const unescape = (str: string): string =>
-  str.replace(/\\(.)/g, s => unescapeChar(s[1]))
+const parseUnicode = (sequence: string, line: number): string => {
+  if (!sequence.match(/^0x[\da-fA-F]{4}$/)) {
+    throw new Error(`Invalid unicode sequence at line ${line}`)
+  }
+  return String.fromCharCode(parseInt(sequence, 16))
+}
 
 /**
  * Escape property key.
