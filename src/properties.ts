@@ -34,7 +34,8 @@ export const empty = (): Properties => ({lines: []})
  * @return Parsed configuration.
  */
 export const parse = (contents: string): Properties => {
-  const lines = contents.split(/\r?\n/)
+  // NOTE all line separators are valid - LF, CRLF, CR
+  const lines = contents.split(/\r|\r?\n/)
 
   // Remove last line, if empty
   if (lines.length > 0 && lines[lines.length - 1].length === 0) {
