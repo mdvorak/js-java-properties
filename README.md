@@ -27,6 +27,15 @@ console.log(props)
 // { lines: [ 'key1=value1', 'key2 = value2', 'key3: value3' ] }
 ```
 
+To read a file from a disk, use standard node `fs` module:
+
+```ts
+import fs from 'node:fs'
+import * as properties from 'js-java-properties'
+
+const props = properties.parse(fs.readFileSync('file.properties', 'utf-8'))
+```
+
 ### Stringify
 
 Formats property lines into string.
