@@ -28,6 +28,11 @@ export type KeyValuePair = {
 export const empty = (): Properties => ({lines: []})
 
 /**
+ * Byte-order mark.
+ */
+export const BOM = 0xfeff
+
+/**
  * Parses java properties file contents.
  *
  * @param contents Java properties string.
@@ -43,7 +48,7 @@ export const parse = (contents: string): Properties => {
   }
 
   // Remove BOM from the first line
-  if (lines.length > 0 && lines[0].codePointAt(0) === 0xfeff) {
+  if (lines.length > 0 && lines[0].codePointAt(0) === BOM) {
     lines[0] = lines[0].slice(1)
   }
 
