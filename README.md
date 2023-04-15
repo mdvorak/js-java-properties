@@ -1,6 +1,7 @@
 # js-java-properties
 
-This is a small library that provides utilities to parse and manipulate Java properties files.
+This is a small library that provides utilities to parse and
+manipulate [Java properties](https://docs.oracle.com/javase/9/docs/api/java/util/Properties.html) files.
 
 Intended mostly for the tools that need to modify existing property file, without reformatting the contents.
 That is achieved by using string array as a backing storage. If you want only to read the properties,
