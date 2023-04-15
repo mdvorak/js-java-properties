@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/mdvorak/js-java-properties/compare/v1.0.1...v1.0.2) (2023-04-15)
+
+
+### Bug Fixes
+
+* use star import in the examples ([9163663](https://github.com/mdvorak/js-java-properties/commit/9163663f9bb6bd478eea6f3bb07430e825654e5d))
+
 ## [1.0.1](https://github.com/mdvorak/js-java-properties/compare/v1.0.0...v1.0.1) (2023-04-15)
 
 
