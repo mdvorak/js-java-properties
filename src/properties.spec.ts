@@ -1,10 +1,12 @@
 import * as fs from 'node:fs/promises'
+
 import properties from '.'
 
 describe('parse', () => {
   it('should parse all lines', () => {
     // Data
-    const sample = 'registry=https://abcd\n#foo bar\r\n@scope:test=avx\rextra\r\n'
+    const sample =
+      'registry=https://abcd\n#foo bar\r\n@scope:test=avx\rextra\r\n'
 
     // Test
     const result = properties.parse(sample)
@@ -108,21 +110,17 @@ describe('data access', () => {
       expect(result).toBe(expected)
     })
 
-    it.each([
-      ['foo6'],
-      ['foo7']
-    ])('should not get commented property "%s"', (key) => {
-      const result = properties.get(sample, key)
-      expect(result).toBeUndefined()
-    })
+    it.each([['foo6'], ['foo7']])(
+      'should not get commented property "%s"',
+      key => {
+        const result = properties.get(sample, key)
+        expect(result).toBeUndefined()
+      }
+    )
 
     it('should return last value of duplicate key', () => {
       const config: properties.Properties = {
-        lines: [
-          'key1=foo1',
-          'key2=foo2',
-          'key1=foo3'
-        ]
+        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
       }
 
       const result = properties.get(config, 'key1')
@@ -137,16 +135,16 @@ describe('data access', () => {
       expect(() => properties.get(config, 'foo')).toThrowError()
     })
 
-    it.each([
-      ['foo=bar\\u23a'],
-      ['foo=bar\\u23ax5']
-    ])('should throw on invalid unicode sequence in value %s', (line) => {
-      const config: properties.Properties = {
-        lines: [line]
-      }
+    it.each([['foo=bar\\u23a'], ['foo=bar\\u23ax5']])(
+      'should throw on invalid unicode sequence in value %s',
+      line => {
+        const config: properties.Properties = {
+          lines: [line]
+        }
 
-      expect(() => properties.get(config, 'foo')).toThrowError()
-    })
+        expect(() => properties.get(config, 'foo')).toThrowError()
+      }
+    )
 
     it.each([
       ['foo=bar', 'bar'],
@@ -259,33 +257,20 @@ describe('data access', () => {
 
     it('should use custom separator', () => {
       const config: properties.Properties = {
-        lines: [
-          'key1=foo1',
-          'key2=foo2'
-        ]
+        lines: ['key1=foo1', 'key2=foo2']
       }
 
       properties.set(config, 'key1', 'test', {separator: ': '})
-      expect(config.lines).toEqual([
-        'key1: test',
-        'key2=foo2'
-      ])
+      expect(config.lines).toEqual(['key1: test', 'key2=foo2'])
     })
 
     it('should remove duplicate keys on set', () => {
       const config: properties.Properties = {
-        lines: [
-          'key1=foo1',
-          'key2=foo2',
-          'key1=foo3'
-        ]
+        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
       }
 
       properties.set(config, 'key1', 'test')
-      expect(config.lines).toEqual([
-        'key1=test',
-        'key2=foo2'
-      ])
+      expect(config.lines).toEqual(['key1=test', 'key2=foo2'])
     })
   })
 
@@ -308,11 +293,7 @@ describe('data access', () => {
 
     it('should remove all duplicate keys with remove', () => {
       const config: properties.Properties = {
-        lines: [
-          'key1=foo1',
-          'key2=foo2',
-          'key1=foo3'
-        ]
+        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
       }
 
       properties.remove(config, 'key1')
@@ -381,7 +362,10 @@ describe('data access', () => {
     })
 
     it('should parse test file', async () => {
-      const contents = await fs.readFile(require.resolve('../fixtures/test-all.properties'), 'utf-8')
+      const contents = await fs.readFile(
+        require.resolve('../fixtures/test-all.properties'),
+        'utf-8'
+      )
 
       // Parse
       const result = properties.toObject(properties.parse(contents))
@@ -397,19 +381,22 @@ describe('data access', () => {
         'evenLikeThis\\': '',
         hello: 'hello',
         helloInJapanese: 'こんにちは',
-        'こんにちは': 'hello',
+        こんにちは: 'hello',
         keyWithBackslashes: 'This has random backslashes',
-        'keyWithDelimiters:= ': 'This is the value for the key "keyWithDelimiters:= "',
+        'keyWithDelimiters:= ':
+          'This is the value for the key "keyWithDelimiters:= "',
         'keyWitheven\\': 'this colon is not escaped',
         language: 'English',
         multiline: 'This line continues on 3 lines',
         multilineKey: 'this is a multiline key',
-        noWhiteSpace: 'The key will be "noWhiteSpace" without any whitespace.    ',
+        noWhiteSpace:
+          'The key will be "noWhiteSpace" without any whitespace.    ',
         oddKey: 'This is line one and\\# This is line two',
         orLikeThis: '',
         path: 'c:\\wiki\\templates',
         topic: '.properties file',
-        valueWithEscapes: 'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
+        valueWithEscapes:
+          'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
         website: 'https://en.wikipedia.org/',
         welcome: 'Welcome to Wikipedia!    '
       })

@@ -199,7 +199,7 @@ export const remove = (config: Properties, key: string): void =>
  *
  * @param lines Lines to iterate over.
  */
-function* chars(lines: string[]): Generator<{char: string, line: number}> {
+function* chars(lines: string[]): Generator<{char: string; line: number}> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     for (const char of line) {
@@ -225,16 +225,23 @@ function* listPairs(lines: string[]): Generator<{
   value: string
 }> {
   const newState = (): {
-    state: State,
-    start: number,
-    key: string,
-    sep: string,
-    value: string,
-    skipSpace: boolean,
-    escapedNext: boolean,
+    state: State
+    start: number
+    key: string
+    sep: string
+    value: string
+    skipSpace: boolean
+    escapedNext: boolean
     unicode?: string
-  } =>
-    ({state: State.START, start: -1, key: '', sep: '', value: '', skipSpace: true, escapedNext: false})
+  } => ({
+    state: State.START,
+    start: -1,
+    key: '',
+    sep: '',
+    value: '',
+    skipSpace: true,
+    escapedNext: false
+  })
 
   let state = newState()
 
@@ -455,7 +462,10 @@ const parseUnicode = (sequence: string, line: number): string => {
  * @param escapeUnicode Escape unicode chars (below 0x0020 and above 0x007e). Default is true.
  * @return Escaped string.
  */
-export const escapeKey = (unescapedKey: string, escapeUnicode = true): string => {
+export const escapeKey = (
+  unescapedKey: string,
+  escapeUnicode = true
+): string => {
   return escape(unescapedKey, true, escapeUnicode)
 }
 
@@ -466,7 +476,10 @@ export const escapeKey = (unescapedKey: string, escapeUnicode = true): string =>
  * @param escapeUnicode Escape unicode chars (below 0x0020 and above 0x007e). Default is true.
  * @return Escaped string.
  */
-export const escapeValue = (unescapedValue: string, escapeUnicode = true): string => {
+export const escapeValue = (
+  unescapedValue: string,
+  escapeUnicode = true
+): string => {
   return escape(unescapedValue, false, escapeUnicode)
 }
 
@@ -485,7 +498,6 @@ const escape = (
 ): string => {
   const result: string[] = []
 
-  // eslint-disable-next-line unicorn/no-for-loop
   for (let index = 0; index < unescapedContent.length; index++) {
     const char = unescapedContent[index]
     switch (char) {
