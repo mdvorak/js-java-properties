@@ -46,13 +46,13 @@ describe('data access', () => {
 
   beforeEach(() => {
     sample.lines = [
-      'foo=bar',
+      '  foo0',
+      'foo1=bar',
       'foo2:bar2',
       'foo3 bar3',
       ' foo4   bar4 ',
       'foo5 = bar5',
       '# foo6 = bar6',
-      'invalid_line',
       '  ! foo7 = bar7',
       'foo8\\::bar8',
       'foo9\\==bar9',
@@ -78,10 +78,11 @@ describe('data access', () => {
   })
 
   const samplePairs = [
-    ['foo', 'bar'],
+    ['foo0', ''],
+    ['foo1', 'bar'],
     ['foo2', 'bar2'],
     ['foo3', 'bar3'],
-    ['foo4', 'bar4'],
+    ['foo4', 'bar4 '],
     ['foo5', 'bar5'],
     ['foo8:', 'bar8'],
     ['foo9=', 'bar9'],
@@ -101,34 +102,19 @@ describe('data access', () => {
     ['foo23', 'bar23']
   ]
 
-  it.each([
-    ['foo', 'bar'],
-    ['foo2', 'bar2'],
-    ['foo3', 'bar3'],
-    ['foo4', 'bar4'],
-    ['foo5', 'bar5'],
-    ['foo6', undefined],
-    ['foo7', undefined],
-    ['foo8:', 'bar8'],
-    ['foo9=', 'bar9'],
-    ['foo10=', 'bar10'],
-    ['foo11 ', 'bar11'],
-    [' foo12', 'bar12'],
-    ['#foo13', 'bar13'],
-    ['!foo14#', 'bar14'],
-    ['foo15', '#bar15'],
-    ['foo16', 'bar16'],
-    ['foo17', 'bar17'],
-    ['f o  o18', ' bar18'],
-    ['foo19\n', 'bar\t\f\r19\n'],
-    ['foo20', ''],
-    ['foo21', ''],
-    ['foo22', '\\'],
-    ['foo23', 'bar23']
-  ])('should get property "%s"', (key, expected) => {
+  it.each(samplePairs)('should get property "%s"', (key, expected) => {
     const result = properties.get(sample, key)
     expect(result).toBe(expected)
   })
+
+  it.each([
+    ['foo6'],
+    ['foo7']
+  ])('should not get commented property "%s"', (key) => {
+    const result = properties.get(sample, key)
+    expect(result).toBeUndefined()
+  })
+
 
   it('should return last value of duplicate key', () => {
     const config: properties.Properties = {
@@ -144,7 +130,7 @@ describe('data access', () => {
   })
 
   it.each([
-    ['foo', 'bar', 'foo=bar'],
+    ['foo1', 'bar', 'foo1=bar'],
     ['foo8:', 'bar8', 'foo8\\:=bar8'],
     ['foo9=', 'bar9', 'foo9\\==bar9'],
     ['foo10=', 'bar10', 'foo10\\==bar10'],
@@ -180,7 +166,8 @@ describe('data access', () => {
 
   it('should replace key pairs', () => {
     const keys = [
-      'foo',
+      'foo0',
+      'foo1',
       'foo2',
       'foo3',
       'foo4',
@@ -206,7 +193,8 @@ describe('data access', () => {
     keys.forEach(key => properties.set(sample, key, 'x'))
 
     expect(sample.lines).toEqual([
-      'foo=x',
+      'foo0=x',
+      'foo1=x',
       'foo2:x',
       'foo3 x',
       'foo4   x',
@@ -339,10 +327,10 @@ describe('data access', () => {
     })
 
     it('should parse test file', async () => {
-      const contents = await fs.readFile('../fixtures/test-all.properties', 'utf-8')
+      const contents = await fs.readFile(require.resolve('../fixtures/test-all.properties'), 'utf-8')
 
       // Parse
-      const result = properties.toMap(properties.parse(contents))
+      const result = properties.toObject(properties.parse(contents))
 
       // Verify
       expect(result).toEqual({

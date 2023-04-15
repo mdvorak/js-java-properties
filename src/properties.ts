@@ -35,7 +35,7 @@ export const empty = (): Properties => ({lines: []})
  */
 export const parse = (contents: string): Properties => {
   // NOTE all line separators are valid - LF, CRLF, CR
-  const lines = contents.split(/\r|\r?\n/)
+  const lines = contents.split(/\r\n|\r|\n/)
 
   // Remove last line, if empty
   if (lines.length > 0 && lines[lines.length - 1].length === 0) {
@@ -77,8 +77,8 @@ export const stringify = (config: Properties): string => {
  * @param config Java properties set.
  */
 export function* list(config: Properties): Generator<KeyValuePair> {
-  for (const {key, rawValue} of listPairs(config.lines)) {
-    yield {key, value: unescape(rawValue)}
+  for (const {key, value} of listPairs(config.lines)) {
+    yield {key, value}
   }
 }
 
@@ -94,8 +94,8 @@ export function* list(config: Properties): Generator<KeyValuePair> {
  */
 export const get = (config: Properties, key: string): string | undefined => {
   // Find existing
-  const {rawValue} = findValue(config.lines, key)
-  return typeof rawValue === 'string' ? unescape(rawValue) : undefined
+  const {value} = findValue(config.lines, key)
+  return value
 }
 
 /**
@@ -108,8 +108,8 @@ export const get = (config: Properties, key: string): string | undefined => {
 export const toObject = (config: Properties): Record<string, string> => {
   const result: Record<string, string> = {}
 
-  for (const {key, rawValue} of listPairs(config.lines)) {
-    result[key] = unescape(rawValue)
+  for (const {key, value} of listPairs(config.lines)) {
+    result[key] = value
   }
 
   return result
@@ -125,8 +125,8 @@ export const toObject = (config: Properties): Record<string, string> => {
 export const toMap = (config: Properties): Map<string, string> => {
   const result = new Map<string, string>()
 
-  for (const {key, rawValue} of listPairs(config.lines)) {
-    result.set(key, unescape(rawValue))
+  for (const {key, value} of listPairs(config.lines)) {
+    result.set(key, value)
   }
 
   return result
@@ -150,7 +150,7 @@ export const set = (
   // Prepare value
   const items =
     typeof value === 'string'
-      ? [`${escapeKey(key)}${sep}${escapeValue(value)}`]
+      ? [`${escapeKey(key)}${sep || '='}${escapeValue(value)}`]
       : []
 
   // If found
@@ -183,7 +183,7 @@ export const remove = (config: Properties, key: string): void =>
 const findValue = (
   lines: string[],
   key: string
-): {start: number; len: number; sep: string; rawValue?: string} => {
+): {start: number; len: number; sep: string; value?: string} => {
   let sep = '='
   for (const entry of listPairs(lines)) {
     // Remember separator
@@ -198,125 +198,183 @@ const findValue = (
   return {start: -1, len: 0, sep}
 }
 
+function* chars(lines: string[]): Generator<{char: string, line: number}> {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    for (const char of line) {
+      yield {char, line: i}
+    }
+    yield {char: 'EOL', line: i}
+  }
+}
+
+enum State {
+  START,
+  COMMENT,
+  KEY,
+  SEPARATOR,
+  VALUE
+}
+
 function* listPairs(lines: string[]): Generator<{
   start: number
   len: number
   sep: string
   key: string
-  rawValue: string
+  value: string
 }> {
-  let i = -1
-  while (++i < lines.length) {
-    const {key, valueLine, sep} = parseLine(lines[i])
+  const newState = (): {
+    state: State,
+    start: number,
+    key: string,
+    sep: string,
+    value: string,
+    skipSpace: boolean,
+    escapedNext: boolean
+  } =>
+    ({state: State.START, start: -1, key: '', sep: '', value: '', skipSpace: true, escapedNext: false})
 
-    // Ignore unparsed lines
-    if (!key || !sep) continue
+  let state = newState()
 
-    // Slurp multiline
-    const start = i
-    let rawValue = valueLine
-    while (countEndChars(rawValue, '\\') % 2 === 1) {
-      rawValue = rawValue.slice(0, -1)
-      if (i < lines.length - 1) {
-        // NOTE this increments i
-        rawValue += trimStartSpaces(lines[++i])
+  for (const {char, line} of chars(lines)) {
+    // Simply ignore spaces
+    if (state.skipSpace && char === ' ') {
+      continue
+    }
+    state.skipSpace = false
+
+    // First char on the line
+    if (state.state === State.START) {
+      switch (char) {
+        case 'EOL':
+          break
+        case '#':
+        case '!':
+          state.state = State.COMMENT
+          state.start = line
+          break
+        default:
+          state.state = State.KEY
+          state.start = line
+          break
       }
     }
-    rawValue = trimEndSpaces(rawValue)
 
-    yield {start, len: i - start + 1, sep, key, rawValue}
-  }
-}
-
-const trimStartSpaces = (str: string): string => {
-  for (let i = 0; i < str.length; i++) {
-    if (str.codePointAt(i) !== 32) {
-      return i > 0 ? str.slice(i) : str
-    }
-  }
-  return '' // all spaces
-}
-
-const trimEndSpaces = (str: string): string => {
-  for (let i = str.length - 1; i >= 0; i--) {
-    if (str.codePointAt(i) !== 32) {
-      return str.slice(0, i + 1)
-    }
-  }
-  return '' // all spaces
-}
-
-const countEndChars = (str: string, c: string): number => {
-  for (let i = str.length; i > 0; i--) {
-    if (str[i - 1] !== c) {
-      return str.length - i
-    }
-  }
-  return str.length
-}
-
-const parseLine = (
-  line: string
-): {key: string; valueLine: string; sep: string} => {
-  let i = -1
-
-  // Skip start spaces
-  while (++i < line.length) {
-    if (line[i] !== ' ') break
-  }
-
-  // Ignore comments
-  if ('#!'.includes(line[i])) {
-    return {key: '', valueLine: '', sep: ''}
-  }
-
-  // Find end of the key
-  let escaped = line[i] === '\\'
-  const keyArr: string[] = !escaped ? [line[i]] : []
-
-  while (++i < line.length) {
-    const c = line[i]
-    // Handle escape sequences
-    if (escaped) {
-      keyArr.push(unescapeChar(c))
-      escaped = false
-      continue
-    }
-    if (c === '\\') {
-      escaped = true
+    // Comment
+    if (state.state === State.COMMENT) {
+      if (char === 'EOL') {
+        state = newState()
+      }
       continue
     }
 
-    // Find end of the key
-    if (':= '.includes(c)) {
-      break
-    } else {
-      keyArr.push(c)
+    // Key
+    if (state.state === State.KEY) {
+      switch (char) {
+        case 'EOL':
+          if (state.escapedNext) {
+            // Multi-line key
+            state.escapedNext = false
+            state.skipSpace = true
+          } else {
+            // Value-less key
+            yield {...state, len: line - state.start + 1}
+            state = newState()
+          }
+          break
+        case ' ':
+        case '=':
+        case ':':
+          if (state.escapedNext) {
+            // Part of the key
+            state.escapedNext = false
+            state.key += char
+          } else {
+            // Start of the separator
+            state.state = State.SEPARATOR
+          }
+          break
+        case '\\':
+          if (state.escapedNext) {
+            // Escaped \ char
+            state.escapedNext = false
+            state.key += char
+          } else {
+            // Escaped next char
+            state.escapedNext = true
+          }
+          break
+        default:
+          // Normal char
+          // TODO handle unicode
+          state.key += state.escapedNext ? unescapeChar(char) : char
+          state.escapedNext = false
+          break
+      }
+    }
+
+    // Separator
+    if (state.state === State.SEPARATOR) {
+      switch (char) {
+        case 'EOL':
+          // Value-less key
+          yield {...state, len: line - state.start + 1}
+          state = newState()
+          break
+        case ' ':
+          state.sep += char
+          break
+        case '=':
+        case ':':
+          // Only one non-space separator char is allowed
+          if (state.sep.match(/[=:]/)) {
+            // This is already part of the value
+            state.state = State.VALUE
+          } else {
+            // Part of the separator
+            state.sep += char
+          }
+          break
+        default:
+          // Value start
+          state.state = State.VALUE
+          break
+      }
+    }
+
+    // Value
+    if (state.state === State.VALUE) {
+      switch (char) {
+        case 'EOL':
+          if (state.escapedNext) {
+            // Multi-line value
+            state.escapedNext = false
+            state.skipSpace = true
+          } else {
+            // Value end
+            yield {...state, len: line - state.start + 1}
+            state = newState()
+          }
+          break
+        case '\\':
+          if (state.escapedNext) {
+            // Escaped \ char
+            state.escapedNext = false
+            state.value += char
+          } else {
+            // Escaped next char
+            state.escapedNext = true
+          }
+          break
+        default:
+          // Normal char
+          // TODO handle unicode
+          state.value += state.escapedNext ? unescapeChar(char) : char
+          state.escapedNext = false
+          break
+      }
     }
   }
-
-  const key = keyArr.join('')
-
-  // Skip separator
-  const sepStart = i
-  let separatorFound = line[i] !== ' '
-  while (++i < line.length) {
-    const c = line[i]
-    // Ignore spaces
-    if (c === ' ') continue
-    // If non-space separator was not found yet
-    if (!separatorFound && ':='.includes(c)) {
-      separatorFound = true
-    } else {
-      // Non-space char found
-      break
-    }
-  }
-
-  // Rest is value
-  const sep = line.substring(sepStart, i)
-  const valueLine = line.substring(i)
-  return {key, valueLine, sep}
 }
 
 // Very simple implementation
