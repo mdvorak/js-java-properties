@@ -93,8 +93,16 @@ export function* list(config: Properties): Generator<KeyValuePair> {
  * @return Found value, or undefined. Value is properly unescaped.
  */
 export const get = (config: Properties, key: string): string | undefined => {
-  // Find existing
-  const {value} = findValue(config.lines, key)
+  let value: string | undefined = undefined
+
+  // Find last value
+  for (const entry of listPairs(config.lines)) {
+    // If found, remember it
+    if (key === entry.key) {
+      value = entry.value
+    }
+  }
+
   return value
 }
 
@@ -132,6 +140,9 @@ export const toMap = (config: Properties): Map<string, string> => {
   return result
 }
 
+const formatLine = (key: string, value: string, sep: string) =>
+  `${escapeKey(key)}${sep}${escapeValue(value)}`
+
 /**
  * Set or remove value for the given key.
  *
@@ -146,22 +157,29 @@ export const set = (
   value: string | undefined | null,
   options?: {separator?: string}
 ): void => {
-  // Find existing
-  const {start, len, sep} = findValue(config.lines, key)
+  let sep = '='
+  let found = false
 
-  // Prepare value
-  const items =
-    typeof value === 'string'
-      ? [`${escapeKey(key)}${options?.separator || sep || '='}${escapeValue(value)}`]
-      : []
+  // Find all entries
+  for (const entry of listPairs(config.lines)) {
+    // Remember separator
+    if (entry.sep) sep = entry.sep
 
-  // If found
-  if (start >= 0 && len > 0) {
-    // Replace
-    config.lines.splice(start, len, ...items)
-  } else {
-    // Not found, append
-    config.lines.push(...items)
+    // If found, either replace or remove
+    if (key === entry.key) {
+      const items =
+        !found && typeof value === 'string'
+          ? [formatLine(key, value, options?.separator || sep)]
+          : []
+
+      config.lines.splice(entry.start, entry.len, ...items)
+      found = true
+    }
+  }
+
+  // Not found, append
+  if (!found && typeof value === 'string') {
+    config.lines.push(formatLine(key, value, options?.separator || sep))
   }
 }
 
@@ -177,29 +195,10 @@ export const remove = (config: Properties, key: string): void =>
   set(config, key, undefined)
 
 /**
- * Find value indices.
+ * Character iterator over lines of chars.
  *
- * @param lines Lines array.
- * @param key Key to be found.
+ * @param lines Lines to iterate over.
  */
-const findValue = (
-  lines: string[],
-  key: string
-): {start: number; len: number; sep: string; value?: string} => {
-  let sep = '='
-  for (const entry of listPairs(lines)) {
-    // Remember separator
-    if (entry.sep) sep = entry.sep
-    // Return found value
-    if (key === entry.key) {
-      return entry
-    }
-  }
-
-  // Not found
-  return {start: -1, len: 0, sep}
-}
-
 function* chars(lines: string[]): Generator<{char: string, line: number}> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
@@ -337,7 +336,7 @@ function* listPairs(lines: string[]): Generator<{
               state.unicode = '0x'
             } else {
               // Special char
-              state.key += unescapeChar(char)
+              state.key += unescapeControlChar(char)
             }
           } else {
             // Normal char
@@ -415,7 +414,7 @@ function* listPairs(lines: string[]): Generator<{
               state.unicode = '0x'
             } else {
               // Special char
-              state.value += unescapeChar(char)
+              state.value += unescapeControlChar(char)
             }
           } else {
             // Normal char
@@ -427,8 +426,7 @@ function* listPairs(lines: string[]): Generator<{
   }
 }
 
-// Very simple implementation
-const unescapeChar = (c: string): string => {
+const unescapeControlChar = (c: string): string => {
   switch (c) {
     case 'r':
       return '\r'

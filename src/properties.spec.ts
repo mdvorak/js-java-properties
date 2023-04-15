@@ -147,6 +147,21 @@ describe('data access', () => {
 
       expect(() => properties.get(config, 'foo')).toThrowError()
     })
+
+    it.each([
+      ['foo=bar', 'bar'],
+      ['foo  bar', 'bar'],
+      ['foo : bar', 'bar'],
+      ['foo := bar', '= bar'],
+      ['foo::bar', ':bar']
+    ])('should handle separator "%s"', (line: string, value: string) => {
+      const config: properties.Properties = {
+        lines: [line]
+      }
+
+      const result = properties.get(config, 'foo')
+      expect(result).toBe(value)
+    })
   })
 
   describe('set value', () => {
