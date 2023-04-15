@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build (${{ matrix.node-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -44,3 +44,12 @@ jobs:
       - name: Publish
         if: ${{ github.ref_type == 'tag' }}
         run: npm publish
+
+  build-all:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: [ build ]
+    steps:
+      - run: echo OK
