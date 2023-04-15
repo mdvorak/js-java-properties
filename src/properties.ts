@@ -84,6 +84,9 @@ export function* list(config: Properties): Generator<KeyValuePair> {
 /**
  * Finds a value for the given key.
  *
+ * Note that this method has O(n) complexity. If you want to read the file
+ * effectively, use `toObject` or `toMap` functions.
+ *
  * @param config Java properties set.
  * @param key Key name.
  * @return Found value, or undefined. Value is properly unescaped.
@@ -170,6 +173,12 @@ export const set = (
 export const remove = (config: Properties, key: string): void =>
   set(config, key, undefined)
 
+/**
+ * Find value indices.
+ *
+ * @param lines Lines array.
+ * @param key Key to be found.
+ */
 const findValue = (
   lines: string[],
   key: string
