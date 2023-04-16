@@ -156,9 +156,10 @@ export const toMap = (config: Properties): Map<string, string> => {
  * @param key Key, can be empty string.
  * @param value Value, can be empty string.
  * @param sep Separator, cannot be empty. Valid chars are ` :=`.
+ * @param escapeUnicode Enable/disable unicode escaping.
  */
-const formatLine = (key: string, value: string, sep: string) =>
-  `${escapeKey(key)}${sep}${escapeValue(value)}`
+const formatLine = (key: string, value: string, sep: string, escapeUnicode: boolean) =>
+  `${escapeKey(key, escapeUnicode)}${sep}${escapeValue(value, escapeUnicode)}`
 
 /**
  * Set or remove value for the given key.
@@ -174,19 +175,20 @@ export const set = (
   value: string | undefined | null,
   options?: {separator?: string}
 ): void => {
-  let sep = '='
+  const escapeUnicode = true
+  let lastSep = '='
   let found = false
 
   // Find all entries
   for (const entry of listPairs(config.lines)) {
     // Remember separator
-    if (entry.sep) sep = entry.sep
+    if (entry.sep) lastSep = entry.sep
 
     // If found, either replace or remove
     if (key === entry.key) {
       const items =
         !found && typeof value === 'string'
-          ? [formatLine(key, value, options?.separator || sep)]
+          ? [formatLine(key, value, options?.separator || lastSep, escapeUnicode)]
           : []
 
       config.lines.splice(entry.start, entry.len, ...items)
@@ -196,7 +198,7 @@ export const set = (
 
   // Not found, append
   if (!found && typeof value === 'string') {
-    config.lines.push(formatLine(key, value, options?.separator || sep))
+    config.lines.push(formatLine(key, value, options?.separator || lastSep, escapeUnicode))
   }
 }
 
