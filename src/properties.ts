@@ -6,6 +6,8 @@ import {escapeKey, escapeValue} from './escape'
 export type Properties = {
   /**
    * Plain text unparsed lines.
+   *
+   * Must not contain newline (`\r` and `\n`) characters.
    */
   lines: string[]
 }
@@ -25,14 +27,14 @@ export type KeyValuePair = {
 }
 
 /**
- * Returns an empty object.
- */
-export const empty = (): Properties => ({lines: []})
-
-/**
  * Byte-order mark.
  */
 export const BOM = 0xfeff
+
+/**
+ * Returns an empty object.
+ */
+export const empty = (): Properties => ({lines: []})
 
 /**
  * Parses java properties file contents.
@@ -299,7 +301,7 @@ function* listPairs(lines: string[]): Generator<{
     if (state.unicode) {
       // Handle incomplete sequence
       if (char === 'EOL') {
-        throw new Error(`Invalid unicode sequence at line ${lineNumber}`)
+        throw newUnicodeError(lineNumber)
       }
 
       // Append and consume until it has correct length
@@ -491,9 +493,13 @@ const unescapeControlChar = (c: string): string => {
   }
 }
 
-const parseUnicode = (sequence: string, line: number): string => {
+const parseUnicode = (sequence: string, lineNumber: number): string => {
   if (!sequence.match(/^0x[\da-fA-F]{4}$/)) {
-    throw new Error(`Invalid unicode sequence at line ${line}`)
+    throw newUnicodeError(lineNumber)
   }
   return String.fromCodePoint(parseInt(sequence, 16))
+}
+
+const newUnicodeError = (lineNumber: number): Error => {
+  return new Error(`Invalid unicode sequence at line ${lineNumber}`)
 }
