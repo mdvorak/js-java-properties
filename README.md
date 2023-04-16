@@ -62,7 +62,7 @@ import * as properties from 'js-java-properties'
 const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-for (const {key, value} of properties.list(props)) {
+for (const {key, value} of properties.listProperties(props)) {
   console.log(`${key}=${value}`)
   // key1=value1
   // key2=value2
@@ -83,7 +83,7 @@ import * as properties from 'js-java-properties'
 const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-console.log(properties.get(props, 'key2'))
+console.log(properties.getProperty(props, 'key2'))
 // 'value2'
 ```
 
@@ -115,19 +115,19 @@ import * as properties from 'js-java-properties'
 const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-properties.set(props, 'key2', 'new-value')
+properties.setProperty(props, 'key2', 'new-value')
 console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\nkey3: value3\n'
 
-properties.set(props, 'new-key', 'new-value')
+properties.setProperty(props, 'new-key', 'new-value')
 console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\nkey3: value3\nnew-key=new-value\n'
 
-properties.set(props, 'new-key', 'new-value', {separator: ':'})
+properties.setProperty(props, 'new-key', 'new-value', {separator: ':'})
 console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\nkey3: value3\nnew-key:new-value\n'
 
-properties.set(props, 'key3', undefined)
+properties.setProperty(props, 'key3', undefined)
 console.log(properties.stringify(props))
 // 'key1=value1\nkey2 = new-value\n'
 ```
@@ -142,7 +142,7 @@ import * as properties from 'js-java-properties'
 const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
-properties.remove(props, 'key2')
+properties.removeProperty(props, 'key2')
 console.log(properties.stringify(props))
 // 'key1=value1\nkey3: value3\n'
 ```

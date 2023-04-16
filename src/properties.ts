@@ -86,7 +86,7 @@ export const stringify = (config: Properties): string => {
  *
  * @param config Java properties set.
  */
-export function* list(config: Properties): Generator<KeyValuePair> {
+export function* listProperties(config: Properties): Generator<KeyValuePair> {
   for (const {key, value} of listPairs(config.lines)) {
     yield {key, value}
   }
@@ -102,7 +102,10 @@ export function* list(config: Properties): Generator<KeyValuePair> {
  * @param key Key name.
  * @return Found value, or undefined. Value is properly unescaped.
  */
-export const get = (config: Properties, key: string): string | undefined => {
+export const getProperty = (
+  config: Properties,
+  key: string
+): string | undefined => {
   let value: string | undefined = undefined
 
   // Find last value
@@ -158,7 +161,12 @@ export const toMap = (config: Properties): Map<string, string> => {
  * @param sep Separator, cannot be empty. Valid chars are ` :=`.
  * @param escapeUnicode Enable/disable unicode escaping.
  */
-const formatLine = (key: string, value: string, sep: string, escapeUnicode: boolean) =>
+const formatLine = (
+  key: string,
+  value: string,
+  sep: string,
+  escapeUnicode: boolean
+) =>
   `${escapeKey(key, escapeUnicode)}${sep}${escapeValue(value, escapeUnicode)}`
 
 /**
@@ -169,26 +177,26 @@ const formatLine = (key: string, value: string, sep: string, escapeUnicode: bool
  * @param value New value. If undefined or null, key will be removed.
  * @param options Optionally override set behavior.
  */
-export const set = (
+export const setProperty = (
   config: Properties,
   key: string,
   value: string | undefined | null,
   options?: {separator?: string}
 ): void => {
   const escapeUnicode = true
-  let lastSep = '='
+  let sep = options?.separator || '='
   let found = false
 
   // Find all entries
   for (const entry of listPairs(config.lines)) {
     // Remember separator
-    if (entry.sep) lastSep = entry.sep
+    if (!options?.separator && entry.sep) sep = entry.sep
 
     // If found, either replace or remove
     if (key === entry.key) {
       const items =
         !found && typeof value === 'string'
-          ? [formatLine(key, value, options?.separator || lastSep, escapeUnicode)]
+          ? [formatLine(key, value, sep, escapeUnicode)]
           : []
 
       config.lines.splice(entry.start, entry.len, ...items)
@@ -198,7 +206,7 @@ export const set = (
 
   // Not found, append
   if (!found && typeof value === 'string') {
-    config.lines.push(formatLine(key, value, options?.separator || lastSep, escapeUnicode))
+    config.lines.push(formatLine(key, value, sep, escapeUnicode))
   }
 }
 
@@ -210,8 +218,8 @@ export const set = (
  * @param config Java properties set.
  * @param key Key name.
  */
-export const remove = (config: Properties, key: string): void =>
-  set(config, key, undefined)
+export const removeProperty = (config: Properties, key: string): void =>
+  setProperty(config, key, undefined)
 
 /**
  * Character iterator over lines of chars.

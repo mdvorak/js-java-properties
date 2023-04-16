@@ -112,16 +112,16 @@ describe('data access', () => {
     ['foo23', 'bar23']
   ]
 
-  describe('get value', () => {
+  describe('getProperty', () => {
     it.each(samplePairs)('should get property "%s"', (key, expected) => {
-      const result = properties.get(sample, key)
+      const result = properties.getProperty(sample, key)
       expect(result).toBe(expected)
     })
 
     it.each([['foo6'], ['foo7']])(
       'should not get commented property "%s"',
       key => {
-        const result = properties.get(sample, key)
+        const result = properties.getProperty(sample, key)
         expect(result).toBeUndefined()
       }
     )
@@ -131,7 +131,7 @@ describe('data access', () => {
         lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
       }
 
-      const result = properties.get(config, 'key1')
+      const result = properties.getProperty(config, 'key1')
       expect(result).toBe('foo3')
     })
 
@@ -140,7 +140,7 @@ describe('data access', () => {
         lines: ['foo\\u23a=bar']
       }
 
-      expect(() => properties.get(config, 'foo')).toThrowError()
+      expect(() => properties.getProperty(config, 'foo')).toThrowError()
     })
 
     it.each([['foo=bar\\u23a'], ['foo=bar\\u23ax5']])(
@@ -150,7 +150,7 @@ describe('data access', () => {
           lines: [line]
         }
 
-        expect(() => properties.get(config, 'foo')).toThrowError()
+        expect(() => properties.getProperty(config, 'foo')).toThrowError()
       }
     )
 
@@ -165,12 +165,12 @@ describe('data access', () => {
         lines: [line]
       }
 
-      const result = properties.get(config, 'foo')
+      const result = properties.getProperty(config, 'foo')
       expect(result).toBe(value)
     })
   })
 
-  describe('set value', () => {
+  describe('setProperty', () => {
     it.each([
       ['foo1', 'bar', 'foo1=bar'],
       ['foo8:', 'bar8', 'foo8\\:=bar8'],
@@ -187,7 +187,7 @@ describe('data access', () => {
       ['foo22', '\\', 'foo22=\\\\']
     ])('should format key pair for "%s"', (key, value, expected) => {
       const config = properties.empty()
-      properties.set(config, key, value)
+      properties.setProperty(config, key, value)
       expect(config.lines).toEqual([expected])
     })
 
@@ -202,7 +202,7 @@ describe('data access', () => {
       const config: properties.Properties = {
         lines: [line]
       }
-      properties.set(config, 'a', 'b')
+      properties.setProperty(config, 'a', 'b')
       expect(config.lines).toEqual([line, expected])
     })
 
@@ -232,7 +232,7 @@ describe('data access', () => {
         'foo22',
         'foo23'
       ]
-      keys.forEach(key => properties.set(sample, key, 'x'))
+      keys.forEach(key => properties.setProperty(sample, key, 'x'))
 
       expect(sample.lines).toEqual([
         'foo0=x',
@@ -268,7 +268,7 @@ describe('data access', () => {
         lines: ['key1=foo1', 'key2=foo2']
       }
 
-      properties.set(config, 'key1', 'test', {separator: ': '})
+      properties.setProperty(config, 'key1', 'test', {separator: ': '})
       expect(config.lines).toEqual(['key1: test', 'key2=foo2'])
     })
 
@@ -277,25 +277,25 @@ describe('data access', () => {
         lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
       }
 
-      properties.set(config, 'key1', 'test')
+      properties.setProperty(config, 'key1', 'test')
       expect(config.lines).toEqual(['key1=test', 'key2=foo2'])
     })
-  })
 
-  describe('remove value', () => {
     it('should remove existing key with set undefined', () => {
       const config: properties.Properties = {
         lines: ['foo=bar']
       }
-      properties.set(config, 'foo', undefined)
+      properties.setProperty(config, 'foo', undefined)
       expect(config.lines).toEqual([])
     })
+  })
 
+  describe('removeProperty', () => {
     it('should remove existing key with remove', () => {
       const config: properties.Properties = {
         lines: ['foo=bar']
       }
-      properties.remove(config, 'foo')
+      properties.removeProperty(config, 'foo')
       expect(config.lines).toEqual([])
     })
 
@@ -304,14 +304,14 @@ describe('data access', () => {
         lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
       }
 
-      properties.remove(config, 'key1')
+      properties.removeProperty(config, 'key1')
       expect(config.lines).toEqual(['key2=foo2'])
     })
   })
 
-  describe('list', () => {
+  describe('listProperties', () => {
     it('should list all key-value pairs', () => {
-      const result = [...properties.list(sample)]
+      const result = [...properties.listProperties(sample)]
       const resultAsArrays = result.map(({key, value}) => [key, value])
 
       expect(resultAsArrays).toEqual(samplePairs)
@@ -322,7 +322,7 @@ describe('data access', () => {
         lines: ['foo=bar1', 'foo=bar2']
       }
 
-      const result = [...properties.list(config)]
+      const result = [...properties.listProperties(config)]
       expect(result).toEqual([
         {key: 'foo', value: 'bar1'},
         {key: 'foo', value: 'bar2'}
@@ -368,46 +368,46 @@ describe('data access', () => {
         ['c', 'd']
       ])
     })
+  })
 
-    it('should parse test file', async () => {
-      const contents = await fs.readFile(
-        require.resolve('../fixtures/test-all.properties'),
-        'utf-8'
-      )
+  it('should parse test file', async () => {
+    const contents = await fs.readFile(
+      require.resolve('../fixtures/test-all.properties'),
+      'utf-8'
+    )
 
-      // Parse
-      const result = properties.toObject(properties.parse(contents))
+    // Parse
+    const result = properties.toObject(properties.parse(contents))
 
-      // Verify
-      expect(result).toEqual({
-        '': 'So does this line.',
-        category: 'file format',
-        duplicateKey: 'second',
-        empty: '',
-        encodedHelloInJapanese: 'こんにちは',
-        evenKey: 'This is on one line\\',
-        'evenLikeThis\\': '',
-        hello: 'hello',
-        helloInJapanese: 'こんにちは',
-        こんにちは: 'hello',
-        keyWithBackslashes: 'This has random backslashes',
-        'keyWithDelimiters:= ':
-          'This is the value for the key "keyWithDelimiters:= "',
-        'keyWitheven\\': 'this colon is not escaped',
-        language: 'English',
-        multiline: 'This line continues on 3 lines',
-        multilineKey: 'this is a multiline key',
-        noWhiteSpace:
-          'The key will be "noWhiteSpace" without any whitespace.    ',
-        oddKey: 'This is line one and\\# This is line two',
-        orLikeThis: '',
-        path: 'c:\\wiki\\templates',
-        topic: '.properties file',
-        valueWithEscapes:
-          'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
-        website: 'https://en.wikipedia.org/',
-        welcome: 'Welcome to Wikipedia!    '
-      })
+    // Verify
+    expect(result).toEqual({
+      '': 'So does this line.',
+      category: 'file format',
+      duplicateKey: 'second',
+      empty: '',
+      encodedHelloInJapanese: 'こんにちは',
+      evenKey: 'This is on one line\\',
+      'evenLikeThis\\': '',
+      hello: 'hello',
+      helloInJapanese: 'こんにちは',
+      '\u3053\u3093\u306B\u3061\u306F': 'hello',
+      keyWithBackslashes: 'This has random backslashes',
+      'keyWithDelimiters:= ':
+        'This is the value for the key "keyWithDelimiters:= "',
+      'keyWitheven\\': 'this colon is not escaped',
+      language: 'English',
+      multiline: 'This line continues on 3 lines',
+      multilineKey: 'this is a multiline key',
+      noWhiteSpace:
+        'The key will be "noWhiteSpace" without any whitespace.    ',
+      oddKey: 'This is line one and\\# This is line two',
+      orLikeThis: '',
+      path: 'c:\\wiki\\templates',
+      topic: '.properties file',
+      valueWithEscapes:
+        'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
+      website: 'https://en.wikipedia.org/',
+      welcome: 'Welcome to Wikipedia!    '
     })
   })
 })
