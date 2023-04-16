@@ -3,9 +3,9 @@
 This is a small library that provides utilities to parse and
 manipulate [Java properties](https://docs.oracle.com/javase/9/docs/api/java/util/Properties.html) files.
 
-Intended mostly for the tools that need to modify existing property file, without reformatting the contents.
-That is achieved by using string array as a backing storage. If you want only to read the properties,
-you should convert it to an object or a `Map` using `toObject(...)` or `toMap(...)` function, respectively.
+Intended mostly for the tools that need to modify an existing property file without reformatting the contents. This is
+achieved by using a string array as a backing storage. If you want only to read the properties, you should convert it to
+an object or a `Map` using `toObject(...)` or `toMap(...)` function, respectively.
 
 ## Usage
 
@@ -14,6 +14,12 @@ You can install this library using NPM:
 ```shell
 npm install js-java-properties
 ```
+
+### Types
+
+- `Properties` represent lines in the properties file. A single property can span multiple lines.
+  It is a part of the API, and it may be extended in future versions.
+- `KeyValuePair` parsed key and value. Used by `listProperties`.
 
 ### Parsing
 
@@ -60,22 +66,25 @@ they are returned here as well.
 import * as properties from 'js-java-properties'
 
 const props = properties.empty()
+props.lines.push('# comment')
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
+props.lines.push('key3: duplicate')
 
 for (const {key, value} of properties.listProperties(props)) {
   console.log(`${key}=${value}`)
   // key1=value1
   // key2=value2
   // key3=value3
+  // key3=duplicate
 }
 ```
 
 ### Getting a value by key
 
 Note that this method has `O(n)` complexity for every operation.
-Use `toObject` or `toMap` methods to convert it into readable object.
+Use `toObject` or `toMap` methods to convert it into a readable object.
 
-In case there are duplicate keys, last one is returned.
+In case there are duplicate keys, the last one is returned.
 
 ```ts
 import * as properties from 'js-java-properties'
@@ -85,9 +94,15 @@ props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
 console.log(properties.getProperty(props, 'key2'))
 // 'value2'
+
+props.lines.push('key2 = duplicate')
+console.log(properties.getProperty(props, 'key2'))
+// 'duplicate'
 ```
 
 ### Converting to object or map
+
+In case there are duplicate keys, the last one is returned.
 
 ```ts
 import * as properties from 'js-java-properties'
@@ -104,10 +119,11 @@ console.log(properties.toMap(props))
 
 ### Setting a value
 
-Adds or replaces given key and value. If value is undefined, it is removed.
-Empty string still counts as a value.
+This method adds or replaces the given key-value pair. If the value is undefined, the key is removed.
+Note that an empty string is still considered a value.
 
-If there are duplicate keys in the list, all but first one are removed.
+If there are multiple occurrences of the same key in the list, only the first one is kept and
+all other occurrences are removed.
 
 ```ts
 import * as properties from 'js-java-properties'
@@ -116,25 +132,26 @@ const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
 properties.setProperty(props, 'key2', 'new-value')
-console.log(properties.stringify(props))
-// 'key1=value1\nkey2 = new-value\nkey3: value3\n'
+console.log(props)
+// { lines: [ 'key1=value1', 'key2 = new-value', 'key3: value3' ] }
 
 properties.setProperty(props, 'new-key', 'new-value')
-console.log(properties.stringify(props))
-// 'key1=value1\nkey2 = new-value\nkey3: value3\nnew-key=new-value\n'
+console.log(props)
+// { lines: [ 'key1=value1', 'key2 = new-value', 'key3: value3', 'new-key: new-value' ] }
 
-properties.setProperty(props, 'new-key', 'new-value', {separator: ':'})
-console.log(properties.stringify(props))
-// 'key1=value1\nkey2 = new-value\nkey3: value3\nnew-key:new-value\n'
+properties.setProperty(props, 'new-key', 'new-value', {separator: ' = '})
+console.log(props)
+// { lines: [ 'key1=value1', 'key2 = new-value', 'key3: value3', 'new-key = new-value' ] }
 
 properties.setProperty(props, 'key3', undefined)
-console.log(properties.stringify(props))
-// 'key1=value1\nkey2 = new-value\n'
+console.log(props)
+// { lines: [ 'key1=value1', 'key2 = new-value', 'new-key = new-value' ] }
 ```
 
 ### Removing a value
 
-Removes given key and value. If there are duplicate keys in the list, all are removed.
+Removes the given key and its associated value. If there are duplicate keys with the same name,
+all values associated with the given key are removed.
 
 ```ts
 import * as properties from 'js-java-properties'
@@ -143,8 +160,8 @@ const props = properties.empty()
 props.lines.push('key1=value1', 'key2 = value2', 'key3: value3')
 
 properties.removeProperty(props, 'key2')
-console.log(properties.stringify(props))
-// 'key1=value1\nkey3: value3\n'
+console.log(props)
+// { lines: [ 'key1=value1', 'key3: value3' ] }
 ```
 
 ## Development
@@ -156,7 +173,8 @@ console.log(properties.stringify(props))
 ### Publishing
 
 Releases are generated using [Release Please](https://github.com/googleapis/release-please).
-Package is automatically published to a [npm registry](https://www.npmjs.com/package/js-java-properties) when release is created.
+Package is automatically published to a [npm registry](https://www.npmjs.com/package/js-java-properties),
+when release is created.
 
 ## Contributing
 
