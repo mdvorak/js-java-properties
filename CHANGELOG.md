@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/mdvorak/js-java-properties/compare/v1.0.2...v1.0.3) (2023-04-16)
+
+
+### Bug Fixes
+
+* more descriptive accessor method names ([ba6f8eb](https://github.com/mdvorak/js-java-properties/commit/ba6f8ebc0f7c45caf80189e4457db11e622154bc))
+* remove default export ([35b5364](https://github.com/mdvorak/js-java-properties/commit/35b53645fda2d557809224ffad637ba99563eadc))
+
 ## [1.0.2](https://github.com/mdvorak/js-java-properties/compare/v1.0.1...v1.0.2) (2023-04-15)
 
 
