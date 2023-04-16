@@ -172,8 +172,8 @@ console.log(props)
 
 ### Publishing
 
-Releases are generated using [Release Please](https://github.com/googleapis/release-please).
-Package is automatically published to a [npm registry](https://www.npmjs.com/package/js-java-properties),
+This package uses [Release Please](https://github.com/googleapis/release-please) to generate releases.
+The package is automatically published to a [npm registry](https://www.npmjs.com/package/js-java-properties)
 when release is created.
 
 ## Contributing
