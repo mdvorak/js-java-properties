@@ -17,7 +17,7 @@ jobs:
     steps:
       # Checkout
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Fix until https://github.com/reviewdog/action-eslint/issues/152 is resolved
       - name: Setup Node
