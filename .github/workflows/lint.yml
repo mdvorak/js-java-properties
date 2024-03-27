@@ -22,8 +22,6 @@ jobs:
       # Fix until https://github.com/reviewdog/action-eslint/issues/152 is resolved
       - name: Setup Node
         uses: actions/setup-node@v4
-        with:
-          node-version: 18.13
 
       # Lint
       - uses: reviewdog/action-eslint@v1
