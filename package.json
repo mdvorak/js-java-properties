@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/mdvorak/js-java-properties#readme",
   "engines": {
-    "node": ">= 16"
+    "node": ">= 18"
   },
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
