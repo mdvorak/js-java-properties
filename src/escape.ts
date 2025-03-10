@@ -5,10 +5,7 @@
  * @param escapeUnicode Escape unicode chars (below 0x0020 and above 0x007e). Default is true.
  * @return Escaped string.
  */
-export const escapeKey = (
-  unescapedKey: string,
-  escapeUnicode = true
-): string => {
+export const escapeKey = (unescapedKey: string, escapeUnicode = true): string => {
   return escape(unescapedKey, true, escapeUnicode)
 }
 
@@ -19,10 +16,7 @@ export const escapeKey = (
  * @param escapeUnicode Escape unicode chars (below 0x0020 and above 0x007e). Default is true.
  * @return Escaped string.
  */
-export const escapeValue = (
-  unescapedValue: string,
-  escapeUnicode = true
-): string => {
+export const escapeValue = (unescapedValue: string, escapeUnicode = true): string => {
   return escape(unescapedValue, false, escapeUnicode)
 }
 
@@ -34,11 +28,7 @@ export const escapeValue = (
  * @param escapeUnicode Whether unicode chars should be escaped
  * @return Escaped string.
  */
-const escape = (
-  unescapedContent: string,
-  escapeSpace: boolean,
-  escapeUnicode: boolean
-): string => {
+const escape = (unescapedContent: string, escapeSpace: boolean, escapeUnicode: boolean): string => {
   const result: string[] = []
 
   for (let index = 0; index < unescapedContent.length; index++) {

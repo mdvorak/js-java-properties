@@ -1,6 +1,6 @@
 import type {Config} from 'jest'
 
-const config: Config = {
+export default {
   moduleFileExtensions: ['js', 'ts'],
   rootDir: 'src',
   testRegex: '.*\\.spec\\.ts$',
@@ -19,7 +19,4 @@ const config: Config = {
   coveragePathIgnorePatterns: ['/node_modules/'],
   coverageDirectory: '../coverage',
   testEnvironment: 'node'
-}
-
-// noinspection JSUnusedGlobalSymbols
-export default config
+} satisfies Config
