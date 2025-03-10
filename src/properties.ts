@@ -106,10 +106,7 @@ export function* listProperties(config: Properties): Generator<KeyValuePair> {
  * @param key Key name.
  * @return Found value, or undefined. Value is properly unescaped.
  */
-export const getProperty = (
-  config: Properties,
-  key: string
-): string | undefined => {
+export const getProperty = (config: Properties, key: string): string | undefined => {
   let value: string | undefined = undefined
 
   // Find last value
@@ -165,12 +162,7 @@ export const toMap = (config: Properties): Map<string, string> => {
  * @param sep Separator, cannot be empty. Valid chars are ` :=`.
  * @param escapeUnicode Enable/disable unicode escaping.
  */
-const formatLine = (
-  key: string,
-  value: string,
-  sep: string,
-  escapeUnicode: boolean
-) =>
+const formatLine = (key: string, value: string, sep: string, escapeUnicode: boolean) =>
   `${escapeKey(key, escapeUnicode)}${sep}${escapeValue(value, escapeUnicode)}`
 
 /**
@@ -198,10 +190,7 @@ export const setProperty = (
 
     // If found, either replace or remove
     if (key === entry.key) {
-      const items =
-        !found && typeof value === 'string'
-          ? [formatLine(key, value, sep, escapeUnicode)]
-          : []
+      const items = !found && typeof value === 'string' ? [formatLine(key, value, sep, escapeUnicode)] : []
 
       config.lines.splice(entry.start, entry.len, ...items)
       found = true
@@ -222,17 +211,16 @@ export const setProperty = (
  * @param config Java properties set.
  * @param key Key name.
  */
-export const removeProperty = (config: Properties, key: string): void =>
+export const removeProperty = (config: Properties, key: string): void => {
   setProperty(config, key, undefined)
+}
 
 /**
  * Character iterator over lines of chars.
  *
  * @param lines Lines to iterate over.
  */
-function* chars(
-  lines: string[]
-): Generator<{char: string; lineNumber: number}> {
+function* chars(lines: string[]): Generator<{char: string; lineNumber: number}> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     for (const char of line) {

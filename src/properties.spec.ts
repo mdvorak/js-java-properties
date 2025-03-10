@@ -5,17 +5,11 @@ import * as properties from '.'
 describe('parse', () => {
   it('should parse all lines', () => {
     // Data
-    const sample =
-      'registry=https://abcd\n#foo bar\r\n@scope:test=avx\rextra\r\n'
+    const sample = 'registry=https://abcd\n#foo bar\r\n@scope:test=avx\rextra\r\n'
 
     // Test
     const result = properties.parse(sample)
-    expect(result.lines).toEqual([
-      'registry=https://abcd',
-      '#foo bar',
-      '@scope:test=avx',
-      'extra'
-    ])
+    expect(result.lines).toEqual(['registry=https://abcd', '#foo bar', '@scope:test=avx', 'extra'])
   })
 
   it('should remove BOM', () => {
@@ -118,13 +112,10 @@ describe('data access', () => {
       expect(result).toBe(expected)
     })
 
-    it.each([['foo6'], ['foo7']])(
-      'should not get commented property "%s"',
-      key => {
-        const result = properties.getProperty(sample, key)
-        expect(result).toBeUndefined()
-      }
-    )
+    it.each([['foo6'], ['foo7']])('should not get commented property "%s"', key => {
+      const result = properties.getProperty(sample, key)
+      expect(result).toBeUndefined()
+    })
 
     it('should return last value of duplicate key', () => {
       const config: properties.Properties = {
@@ -140,19 +131,16 @@ describe('data access', () => {
         lines: ['foo\\u23a=bar']
       }
 
-      expect(() => properties.getProperty(config, 'foo')).toThrowError()
+      expect(() => properties.getProperty(config, 'foo')).toThrow()
     })
 
-    it.each([['foo=bar\\u23a'], ['foo=bar\\u23ax5']])(
-      'should throw on invalid unicode sequence in value %s',
-      line => {
-        const config: properties.Properties = {
-          lines: [line]
-        }
-
-        expect(() => properties.getProperty(config, 'foo')).toThrowError()
+    it.each([['foo=bar\\u23a'], ['foo=bar\\u23ax5']])('should throw on invalid unicode sequence in value %s', line => {
+      const config: properties.Properties = {
+        lines: [line]
       }
-    )
+
+      expect(() => properties.getProperty(config, 'foo')).toThrow()
+    })
 
     it.each([
       ['foo=bar', 'bar'],
@@ -232,7 +220,9 @@ describe('data access', () => {
         'foo22',
         'foo23'
       ]
-      keys.forEach(key => properties.setProperty(sample, key, 'x'))
+      keys.forEach(key => {
+        properties.setProperty(sample, key, 'x')
+      })
 
       expect(sample.lines).toEqual([
         'foo0=x',
@@ -371,10 +361,7 @@ describe('data access', () => {
   })
 
   it('should parse test file', async () => {
-    const contents = await fs.readFile(
-      require.resolve('../fixtures/test-all.properties'),
-      'utf-8'
-    )
+    const contents = await fs.readFile(require.resolve('../fixtures/test-all.properties'), 'utf-8')
 
     // Parse
     const result = properties.toObject(properties.parse(contents))
@@ -392,20 +379,17 @@ describe('data access', () => {
       helloInJapanese: 'こんにちは',
       '\u3053\u3093\u306B\u3061\u306F': 'hello',
       keyWithBackslashes: 'This has random backslashes',
-      'keyWithDelimiters:= ':
-        'This is the value for the key "keyWithDelimiters:= "',
+      'keyWithDelimiters:= ': 'This is the value for the key "keyWithDelimiters:= "',
       'keyWitheven\\': 'this colon is not escaped',
       language: 'English',
       multiline: 'This line continues on 3 lines',
       multilineKey: 'this is a multiline key',
-      noWhiteSpace:
-        'The key will be "noWhiteSpace" without any whitespace.    ',
+      noWhiteSpace: 'The key will be "noWhiteSpace" without any whitespace.    ',
       oddKey: 'This is line one and\\# This is line two',
       orLikeThis: '',
       path: 'c:\\wiki\\templates',
       topic: '.properties file',
-      valueWithEscapes:
-        'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
+      valueWithEscapes: 'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
       website: 'https://en.wikipedia.org/',
       welcome: 'Welcome to Wikipedia!    '
     })
