@@ -45,3 +45,12 @@ describe('escapeValue', () => {
     expect(result).toEqual(expected)
   })
 })
+
+// Add branch coverage for escapeUnicode = false and non-ASCII char
+describe('escape (internal, branch coverage)', () => {
+  it('should not escape unicode when escapeUnicode is false', () => {
+    // \u3053 is 'こ'
+    expect(properties.escapeValue('こ', false)).toBe('こ')
+    expect(properties.escapeKey('こ', false)).toBe('こ')
+  })
+})
