@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/mdvorak/js-java-properties/compare/v1.0.3...v1.0.4) (2025-07-07)
+
+
+### Bug Fixes
+
+* change compiler target to ES2022 ([4a55d36](https://github.com/mdvorak/js-java-properties/commit/4a55d3632e9e2b6636ccb6a94d6c6c7192398e6b))
+
 ## [1.0.3](https://github.com/mdvorak/js-java-properties/compare/v1.0.2...v1.0.3) (2023-04-16)
 
 
