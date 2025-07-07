@@ -43,6 +43,17 @@ describe('stringify', () => {
     const result = properties.stringify(config)
     expect(result).toEqual('foo=bar\n')
   })
+
+  it('should not add trailing newline if last line is empty', () => {
+    // Data
+    const config = {
+      lines: ['foo=bar', '']
+    }
+
+    // Test
+    const result = properties.stringify(config)
+    expect(result).toEqual('foo=bar\n')
+  })
 })
 
 describe('data access', () => {
