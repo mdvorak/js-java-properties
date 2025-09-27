@@ -25,6 +25,12 @@ updates:
           - "*jest*"
           - "*vitest*"
           - "*playwright*"
+        commit-message:
+          prefix: "fix(deps)"
+          include: "scope"
       dev-types:
         patterns:
           - "@types/*"
+        commit-message:
+          prefix: "build(deps-dev)"
+          include: "scope"
