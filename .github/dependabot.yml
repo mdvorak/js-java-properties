@@ -13,6 +13,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    commit-message:
+      prefix: 'fix(deps)'
+      prefix-development: 'build(deps-dev)'
     versioning-strategy: increase-if-necessary
     groups:
       prod-deps:
@@ -25,12 +28,6 @@ updates:
           - "*jest*"
           - "*vitest*"
           - "*playwright*"
-        commit-message:
-          prefix: "fix(deps)"
-          include: "scope"
       dev-types:
         patterns:
           - "@types/*"
-        commit-message:
-          prefix: "build(deps-dev)"
-          include: "scope"
