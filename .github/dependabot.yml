@@ -14,8 +14,8 @@ updates:
     schedule:
       interval: "weekly"
     commit-message:
-      prefix: 'fix(deps)'
-      prefix-development: 'build(deps-dev)'
+      prefix: "fix(deps)"
+      prefix-development: "build(deps-dev)"
     versioning-strategy: increase-if-necessary
     groups:
       prod-deps:
