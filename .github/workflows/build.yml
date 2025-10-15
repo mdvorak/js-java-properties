@@ -51,9 +51,11 @@ jobs:
 
   publish:
     name: Publish
-    if: github.ref_type == 'tag'
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
+    environment: publish
     permissions:
+      id-token: write
       contents: read
     needs: [ build-all ]
     steps:
@@ -76,5 +78,3 @@ jobs:
       # Publish
       - name: Publish
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
