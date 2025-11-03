@@ -1,0 +1,9 @@
+{
+  "always-update": true,
+  "include-component-in-tag": false,
+  "packages": {
+    ".": {
+      "release-type": "node"
+    }
+  }
+}
