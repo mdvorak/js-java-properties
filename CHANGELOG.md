@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/mdvorak/js-java-properties/compare/v1.0.4...v1.1.0) (2025-11-03)
+
+
+### Features
+
+* use unbuild and vitest, publish both cjs and mjs files ([f24b70e](https://github.com/mdvorak/js-java-properties/commit/f24b70e2baf77c32edb843a90f5fd90e923e5b37))
+
 ## [1.0.4](https://github.com/mdvorak/js-java-properties/compare/v1.0.3...v1.0.4) (2025-07-07)
 
 
