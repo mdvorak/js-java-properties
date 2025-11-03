@@ -19,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Fix until https://github.com/reviewdog/action-eslint/issues/152 is resolved
+      # Setup Node
       - name: Setup Node
         uses: actions/setup-node@v6
 

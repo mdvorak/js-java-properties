@@ -1,4 +1,4 @@
-import {escapeKey, escapeValue} from './escape'
+import { escapeKey, escapeValue } from './escape'
 
 /**
  * Wrapper for java properties file contents
@@ -34,7 +34,7 @@ export const BOM = 0xfeff
 /**
  * Returns an empty object.
  */
-export const empty = (): Properties => ({lines: []})
+export const empty = (): Properties => ({ lines: [] })
 
 /**
  * Parses java properties file contents.
@@ -56,7 +56,7 @@ export const parse = (contents: string): Properties => {
     lines[0] = lines[0].slice(1)
   }
 
-  return {lines}
+  return { lines }
 }
 
 /**
@@ -91,8 +91,8 @@ export const stringify = (config: Properties): string => {
  * @param config Java properties set.
  */
 export function* listProperties(config: Properties): Generator<KeyValuePair> {
-  for (const {key, value} of listPairs(config.lines)) {
-    yield {key, value}
+  for (const { key, value } of listPairs(config.lines)) {
+    yield { key, value }
   }
 }
 
@@ -130,7 +130,7 @@ export const getProperty = (config: Properties, key: string): string | undefined
 export const toObject = (config: Properties): Record<string, string> => {
   const result: Record<string, string> = {}
 
-  for (const {key, value} of listPairs(config.lines)) {
+  for (const { key, value } of listPairs(config.lines)) {
     result[key] = value
   }
 
@@ -147,7 +147,7 @@ export const toObject = (config: Properties): Record<string, string> => {
 export const toMap = (config: Properties): Map<string, string> => {
   const result = new Map<string, string>()
 
-  for (const {key, value} of listPairs(config.lines)) {
+  for (const { key, value } of listPairs(config.lines)) {
     result.set(key, value)
   }
 
@@ -177,7 +177,7 @@ export const setProperty = (
   config: Properties,
   key: string,
   value: string | undefined | null,
-  options?: {separator?: string}
+  options?: { separator?: string }
 ): void => {
   const escapeUnicode = true
   let sep = options?.separator || '='
@@ -190,7 +190,8 @@ export const setProperty = (
 
     // If found, either replace or remove
     if (key === entry.key) {
-      const items = !found && typeof value === 'string' ? [formatLine(key, value, sep, escapeUnicode)] : []
+      const items =
+        !found && typeof value === 'string' ? [formatLine(key, value, sep, escapeUnicode)] : []
 
       config.lines.splice(entry.start, entry.len, ...items)
       found = true
@@ -220,13 +221,13 @@ export const removeProperty = (config: Properties, key: string): void => {
  *
  * @param lines Lines to iterate over.
  */
-function* chars(lines: string[]): Generator<{char: string; lineNumber: number}> {
+function* chars(lines: string[]): Generator<{ char: string; lineNumber: number }> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i]
     for (const char of line) {
-      yield {char, lineNumber: i}
+      yield { char, lineNumber: i }
     }
-    yield {char: 'EOL', lineNumber: i}
+    yield { char: 'EOL', lineNumber: i }
   }
 }
 
@@ -238,7 +239,7 @@ enum State {
   COMMENT,
   KEY,
   SEPARATOR,
-  VALUE
+  VALUE,
 }
 
 /**
@@ -260,7 +261,7 @@ const newState = (): {
   sep: '',
   value: '',
   skipSpace: true,
-  escapedNext: false
+  escapedNext: false,
 })
 
 /**
@@ -278,7 +279,7 @@ function* listPairs(lines: string[]): Generator<{
 }> {
   let state = newState()
 
-  for (const {char, lineNumber} of chars(lines)) {
+  for (const { char, lineNumber } of chars(lines)) {
     // Simply ignore spaces
     if (state.skipSpace && char === ' ') {
       continue
@@ -341,7 +342,7 @@ function* listPairs(lines: string[]): Generator<{
             state.skipSpace = true
           } else {
             // Value-less key
-            yield {...state, len: lineNumber - state.start + 1}
+            yield { ...state, len: lineNumber - state.start + 1 }
             state = newState()
           }
           break
@@ -391,7 +392,7 @@ function* listPairs(lines: string[]): Generator<{
       switch (char) {
         case 'EOL':
           // Value-less key
-          yield {...state, len: lineNumber - state.start + 1}
+          yield { ...state, len: lineNumber - state.start + 1 }
           state = newState()
           break
         case ' ':
@@ -432,7 +433,7 @@ function* listPairs(lines: string[]): Generator<{
             state.skipSpace = true
           } else {
             // Value end
-            yield {...state, len: lineNumber - state.start + 1}
+            yield { ...state, len: lineNumber - state.start + 1 }
             state = newState()
           }
           break
