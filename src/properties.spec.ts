@@ -1,6 +1,11 @@
 import * as fs from 'node:fs/promises'
+import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import * as properties from '.'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 describe('parse', () => {
   it('should parse all lines', () => {
@@ -25,7 +30,7 @@ describe('stringify', () => {
   it('should format all lines', () => {
     // Data
     const config = {
-      lines: ['registry=https://abcd', '#foo bar', '@scope:test=avx']
+      lines: ['registry=https://abcd', '#foo bar', '@scope:test=avx'],
     }
 
     // Test
@@ -36,7 +41,7 @@ describe('stringify', () => {
   it('should remove leading newlines', () => {
     // Data
     const config = {
-      lines: ['', '', 'foo=bar']
+      lines: ['', '', 'foo=bar'],
     }
 
     // Test
@@ -47,7 +52,7 @@ describe('stringify', () => {
   it('should not add trailing newline if last line is empty', () => {
     // Data
     const config = {
-      lines: ['foo=bar', '']
+      lines: ['foo=bar', ''],
     }
 
     // Test
@@ -88,7 +93,7 @@ describe('data access', () => {
       '   ',
       'foo22 =\\\\',
       'foo\\',
-      '23 bar23'
+      '23 bar23',
     ]
   })
 
@@ -114,7 +119,7 @@ describe('data access', () => {
     ['foo20', ''],
     ['foo21', ''],
     ['foo22', '\\'],
-    ['foo23', 'bar23']
+    ['foo23', 'bar23'],
   ]
 
   describe('getProperty', () => {
@@ -130,7 +135,7 @@ describe('data access', () => {
 
     it('should return last value of duplicate key', () => {
       const config: properties.Properties = {
-        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
+        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3'],
       }
 
       const result = properties.getProperty(config, 'key1')
@@ -139,29 +144,32 @@ describe('data access', () => {
 
     it('should throw on invalid unicode sequence in key', () => {
       const config: properties.Properties = {
-        lines: ['foo\\u23a=bar']
+        lines: ['foo\\u23a=bar'],
       }
 
       expect(() => properties.getProperty(config, 'foo')).toThrow()
     })
 
-    it.each([['foo=bar\\u23a'], ['foo=bar\\u23ax5']])('should throw on invalid unicode sequence in value %s', line => {
-      const config: properties.Properties = {
-        lines: [line]
-      }
+    it.each([['foo=bar\\u23a'], ['foo=bar\\u23ax5']])(
+      'should throw on invalid unicode sequence in value %s',
+      line => {
+        const config: properties.Properties = {
+          lines: [line],
+        }
 
-      expect(() => properties.getProperty(config, 'foo')).toThrow()
-    })
+        expect(() => properties.getProperty(config, 'foo')).toThrow()
+      }
+    )
 
     it.each([
       ['foo=bar', 'bar'],
       ['foo  bar', 'bar'],
       ['foo : bar', 'bar'],
       ['foo := bar', '= bar'],
-      ['foo::bar', ':bar']
+      ['foo::bar', ':bar'],
     ])('should handle separator "%s"', (line: string, value: string) => {
       const config: properties.Properties = {
-        lines: [line]
+        lines: [line],
       }
 
       const result = properties.getProperty(config, 'foo')
@@ -183,7 +191,7 @@ describe('data access', () => {
       ['f o  o18', ' bar18', 'f\\ o\\ \\ o18=\\ bar18'],
       ['foo19\n', 'bar\t\f\r19\n', 'foo19\\n=bar\\t\\f\\r19\\n'],
       ['foo20', '', 'foo20='],
-      ['foo22', '\\', 'foo22=\\\\']
+      ['foo22', '\\', 'foo22=\\\\'],
     ])('should format key pair for "%s"', (key, value, expected) => {
       const config = properties.empty()
       properties.setProperty(config, key, value)
@@ -196,10 +204,10 @@ describe('data access', () => {
       ['foo:bar', 'a:b'],
       ['foo: bar', 'a: b'],
       ['foo  bar', 'a  b'],
-      ['# comment', 'a=b']
+      ['# comment', 'a=b'],
     ])('should reuse last separator from "%s"', (line, expected) => {
       const config: properties.Properties = {
-        lines: [line]
+        lines: [line],
       }
       properties.setProperty(config, 'a', 'b')
       expect(config.lines).toEqual([line, expected])
@@ -229,7 +237,7 @@ describe('data access', () => {
         'foo20',
         'foo21',
         'foo22',
-        'foo23'
+        'foo23',
       ]
       keys.forEach(key => {
         properties.setProperty(sample, key, 'x')
@@ -260,22 +268,22 @@ describe('data access', () => {
         'foo21 =x',
         'foo22 =x',
         'foo23 x',
-        'foo6 x'
+        'foo6 x',
       ])
     })
 
     it('should use custom separator', () => {
       const config: properties.Properties = {
-        lines: ['key1=foo1', 'key2=foo2']
+        lines: ['key1=foo1', 'key2=foo2'],
       }
 
-      properties.setProperty(config, 'key1', 'test', {separator: ': '})
+      properties.setProperty(config, 'key1', 'test', { separator: ': ' })
       expect(config.lines).toEqual(['key1: test', 'key2=foo2'])
     })
 
     it('should remove duplicate keys on set', () => {
       const config: properties.Properties = {
-        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
+        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3'],
       }
 
       properties.setProperty(config, 'key1', 'test')
@@ -284,7 +292,7 @@ describe('data access', () => {
 
     it('should remove existing key with set undefined', () => {
       const config: properties.Properties = {
-        lines: ['foo=bar']
+        lines: ['foo=bar'],
       }
       properties.setProperty(config, 'foo', undefined)
       expect(config.lines).toEqual([])
@@ -294,7 +302,7 @@ describe('data access', () => {
   describe('removeProperty', () => {
     it('should remove existing key with remove', () => {
       const config: properties.Properties = {
-        lines: ['foo=bar']
+        lines: ['foo=bar'],
       }
       properties.removeProperty(config, 'foo')
       expect(config.lines).toEqual([])
@@ -302,7 +310,7 @@ describe('data access', () => {
 
     it('should remove all duplicate keys with remove', () => {
       const config: properties.Properties = {
-        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3']
+        lines: ['key1=foo1', 'key2=foo2', 'key1=foo3'],
       }
 
       properties.removeProperty(config, 'key1')
@@ -313,20 +321,20 @@ describe('data access', () => {
   describe('listProperties', () => {
     it('should list all key-value pairs', () => {
       const result = [...properties.listProperties(sample)]
-      const resultAsArrays = result.map(({key, value}) => [key, value])
+      const resultAsArrays = result.map(({ key, value }) => [key, value])
 
       expect(resultAsArrays).toEqual(samplePairs)
     })
 
     it('should list duplicate pairs', () => {
       const config: properties.Properties = {
-        lines: ['foo=bar1', 'foo=bar2']
+        lines: ['foo=bar1', 'foo=bar2'],
       }
 
       const result = [...properties.listProperties(config)]
       expect(result).toEqual([
-        {key: 'foo', value: 'bar1'},
-        {key: 'foo', value: 'bar2'}
+        { key: 'foo', value: 'bar1' },
+        { key: 'foo', value: 'bar2' },
       ])
     })
   })
@@ -339,14 +347,14 @@ describe('data access', () => {
 
     it('should return last value of duplicate key', () => {
       const config: properties.Properties = {
-        lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d']
+        lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d'],
       }
 
       const result = properties.toObject(config)
       expect(Object.entries(result)).toEqual([
         ['foo', 'bar3'],
         ['a', 'b'],
-        ['c', 'd']
+        ['c', 'd'],
       ])
     })
   })
@@ -359,20 +367,23 @@ describe('data access', () => {
 
     it('should return last value of duplicate key', () => {
       const config: properties.Properties = {
-        lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d']
+        lines: ['foo=bar1', 'a=b', 'foo=bar2', 'foo=bar3', 'c=d'],
       }
 
       const result = properties.toMap(config)
       expect([...result.entries()]).toEqual([
         ['foo', 'bar3'],
         ['a', 'b'],
-        ['c', 'd']
+        ['c', 'd'],
       ])
     })
   })
 
   it('should parse test file', async () => {
-    const contents = await fs.readFile(require.resolve('../fixtures/test-all.properties'), 'utf-8')
+    const contents = await fs.readFile(
+      path.resolve(__dirname, '../fixtures/test-all.properties'),
+      'utf-8'
+    )
 
     // Parse
     const result = properties.toObject(properties.parse(contents))
@@ -402,7 +413,7 @@ describe('data access', () => {
       topic: '.properties file',
       valueWithEscapes: 'This is a newline\n, a carriage return\r, a tab\t and a formfeed\f.',
       website: 'https://en.wikipedia.org/',
-      welcome: 'Welcome to Wikipedia!    '
+      welcome: 'Welcome to Wikipedia!    ',
     })
   })
 })

@@ -1,10 +1,12 @@
 {
-  "printWidth": 120,
-  "tabWidth": 2,
-  "useTabs": false,
+  "plugins": [
+    "prettier-plugin-organize-imports"
+  ],
   "semi": false,
-  "singleQuote": true,
-  "trailingComma": "none",
-  "bracketSpacing": false,
+  "singleQuote": false,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
   "arrowParens": "avoid"
 }

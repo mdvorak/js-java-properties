@@ -5,10 +5,10 @@
   "scripts": {
     "lint": "eslint .",
     "fix": "prettier --write src && npm run lint -- --fix",
-    "prebuild": "rimraf lib",
-    "build": "tsc --project tsconfig.build.json",
-    "test": "jest --config jest.config.ts --coverage",
-    "test:ci": "npm run lint && npm run test -- --no-cache",
+    "build": "unbuild",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "test:ci": "npm run lint && npm run test",
     "all": "npm run lint && npm run build && npm run test",
     "prepack": "npm run build"
   },
@@ -29,26 +29,36 @@
   },
   "homepage": "https://github.com/mdvorak/js-java-properties#readme",
   "engines": {
-    "node": ">= 18"
+    "node": ">= 20"
   },
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "type": "module",
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.mjs",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.cjs"
+    }
+  },
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
-    "@types/jest": "^30.0.0",
-    "eslint": "^9.30.1",
-    "eslint-config-prettier": "^10.1.5",
+    "@eslint/js": "^9.39.0",
+    "@types/node": "^20.19.24",
+    "@vitest/coverage-v8": "^4.0.6",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "jest": "^30.0.4",
     "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "ts-jest": "^29.4.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "typescript-eslint": "^8.35.1"
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2",
+    "unbuild": "^3.6.1",
+    "vitest": "^4.0.6"
+  },
+  "overrides": {
+    "eslint": "~9.38.0"
   }
 }

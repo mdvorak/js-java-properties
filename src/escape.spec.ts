@@ -16,7 +16,7 @@ describe('escapeKey', () => {
     ['\\foo12\\', '\\\\foo12\\\\'],
     ['\0\u0001', '\\u0000\\u0001'],
     ['\u3053\u3093\u306B\u3061\u306F', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
-    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f']
+    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
   ])('should escape key "%s" as "%s"', (key: string, expected: string) => {
     const result = properties.escapeKey(key)
     expect(result).toEqual(expected)
@@ -39,7 +39,7 @@ describe('escapeValue', () => {
     ['\\foo12\\', '\\\\foo12\\\\'],
     ['\0\u0001', '\\u0000\\u0001'],
     ['\u3053\u3093\u306B\u3061\u306F', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
-    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f']
+    ['こんにちは', '\\u3053\\u3093\\u306b\\u3061\\u306f'],
   ])('should escape value "%s" as "%s"', (key: string, expected: string) => {
     const result = properties.escapeValue(key)
     expect(result).toEqual(expected)
