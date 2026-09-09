@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.1](https://github.com/mdvorak/js-java-properties/compare/v1.1.0...v1.1.1) (2026-04-06)
+
+
+### Bug Fixes
+
+* **deps:** bump minimatch ([9968c89](https://github.com/mdvorak/js-java-properties/commit/9968c89b5eb6b978b6b121db01cc99b6ce90b969))
+* **deps:** bump picomatch from 4.0.3 to 4.0.4 ([5248990](https://github.com/mdvorak/js-java-properties/commit/5248990d36c171f2b622768a231d86560f22976e))
+* **deps:** bump rollup from 4.52.5 to 4.59.0 ([5ba3477](https://github.com/mdvorak/js-java-properties/commit/5ba34772168a1d93df1ce2e0a84d0069c2d7048c))
+
 ## [1.1.0](https://github.com/mdvorak/js-java-properties/compare/v1.0.4...v1.1.0) (2025-11-03)
 
 
